@@ -1,26 +1,53 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-primary: #13ec13;
+  --color-forest-green: #0d1b0d;
+  --color-terracotta: #b25a38;
+  --color-soft-cream: #fdfaf6;
+  --color-background-light: #fdfaf6;
+  --color-background-dark: #102210;
+
+  --font-display: var(--font-plus-jakarta-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-playfair-display), ui-serif, Georgia, serif;
+
+  /* Admin Colors */
+  --color-admin-primary: #1B4D1B;
+  --color-admin-accent: #C15B3E;
+  --color-admin-cream: #F9F8F3;
+  --color-admin-sage: #E9EDEA;
+  --color-admin-forest: #0D210D;
+
+  --radius-DEFAULT: 0.25rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+  --radius-full: 9999px;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer utilities {
+  .product-card:hover .nutritional-overlay {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .nutritional-overlay {
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.3s ease-in-out;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+::-webkit-scrollbar {
+  height: 4px;
+  width: 4px;
+}
+::-webkit-scrollbar-thumb {
+  background: #13ec13;
+  border-radius: 10px;
 }

@@ -1,0 +1,88 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Product {
+  id               String   @id @default(cuid())
+  sku              String   @unique
+  price            Float
+  stock            Int      @default(0)
+  category         String
+  nameFr           String
+  nameEn           String
+  descFr           String   @db.Text
+  descEn           String   @db.Text
+  image            String
+  
+  // Nutrition Data
+  nutritionLabel1Fr String?
+  nutritionLabel1En String?
+  nutritionValue1   String?
+  nutritionLabel2Fr String?
+  nutritionLabel2En String?
+  nutritionValue2   String?
+  nutritionLabel3Fr String?
+  nutritionLabel3En String?
+  nutritionValue3   String?
+  nutritionLabel4Fr String?
+  nutritionLabel4En String?
+  nutritionValue4   String?
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  
+  orderItems       OrderItem[]
+}
+
+model Order {
+  id          String   @id @default(cuid())
+  customerId  String
+  customer    Customer @relation(fields: [customerId], references: [id])
+  status      String   @default("PENDING") // PENDING, PROCESSING, COMPLETED, CANCELLED
+  txRef       String?  @unique
+  paymentStatus String @default("PENDING") // PENDING, SUCCESSFUL, FAILED
+  total       Float
+  deliveryFee Float    @default(0)
+  items       OrderItem[]
+  invoice     Invoice?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id])
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  quantity  Int
+  priceAtPurchase Float
+}
+
+model Customer {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  password    String?
+  name        String
+  totalSpent  Float    @default(0)
+  orders      Order[]
+  invoices    Invoice[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Invoice {
+  id            String   @id @default(cuid())
+  invoiceNumber String   @unique
+  orderId       String   @unique
+  order         Order    @relation(fields: [orderId], references: [id])
+  customerId    String
+  customer      Customer @relation(fields: [customerId], references: [id])
+  amount        Float
+  status        String   @default("ISSUED") // DRAFT, ISSUED, PAID
+  issuedAt      DateTime @default(now())
+}
