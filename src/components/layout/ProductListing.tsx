@@ -33,18 +33,22 @@ const CATEGORIES = [
   { id: 'VEGETARIAN', fr: 'Végétarien', en: 'Vegetarian' },
 ];
 
+interface SubcategoryData {
+  products: any[];
+  page: number;
+  hasMore: boolean;
+  isLoadingMore: boolean;
+}
+
 export default function ProductListing({ type, initialData, subcategories }: ProductListingProps) {
   const locale = useLocale();
-  const [products, setProducts] = useState(initialData.products);
-  const [totalPages, setTotalPages] = useState(initialData.totalPages);
-  const [currentPage, setCurrentPage] = useState(initialData.currentPage);
+  const [dataBySub, setDataBySub] = useState<Record<string, SubcategoryData>>(initialData.productsBySub || {});
+  const [isLoading, setIsLoading] = useState(false);
   
   const searchParams = useSearchParams();
   const [activeCategory, setActiveCategory] = useState('ALL');
   const [activeSubcategories, setActiveSubcategories] = useState<string[]>([]);
   const [isGlutenFree, setIsGlutenFree] = useState(false);
-  
-  const [isLoading, setIsLoading] = useState(false);
 
   // Initialize filters from URL on mount
   useEffect(() => {
@@ -71,39 +75,58 @@ export default function ProductListing({ type, initialData, subcategories }: Pro
 
   const [isMount, setIsMount] = useState(true);
 
-  const fetchProducts = useCallback(async (page: number, cat: string, subs: string[], gf: boolean) => {
+  const fetchInitialData = useCallback(async (cat: string, subs: string[], gf: boolean) => {
     setIsLoading(true);
     try {
-      const result = await getAllStoreProducts({
-        type,
-        category: cat === 'ALL' ? undefined : cat,
-        subcategory: subs.length > 0 ? subs : undefined, // Note: action might need update for IDs
-        isGlutenFree: gf,
-        page,
-        limit: 12
-      });
-      setProducts(result.products);
-      setTotalPages(result.totalPages);
-      setCurrentPage(result.currentPage);
+      const activeSubs = subcategories.filter(s => s.productType === type);
+      const subData: Record<string, SubcategoryData> = {};
+      
+      // Fetch initial batch (4 products) for each subcategory in parallel
+      await Promise.all(activeSubs.map(async (sub) => {
+        // If specific subcategories are selected in the filter, only fetch those
+        if (subs.length > 0 && !subs.includes(sub.id)) return;
+
+        const result = await getAllStoreProducts({
+          type,
+          category: cat === 'ALL' ? undefined : cat,
+          subcategory: sub.id,
+          isGlutenFree: gf,
+          page: 1,
+          limit: 4
+        });
+
+        if (result.products.length > 0) {
+          subData[sub.id] = {
+            products: result.products,
+            page: 1,
+            hasMore: result.currentPage < result.totalPages,
+            isLoadingMore: false
+          };
+        }
+      }));
+
+      setDataBySub(subData);
     } catch (error) {
-      console.error("Failed to fetch products:", error);
+      console.error("Failed to fetch initial products:", error);
     } finally {
       setIsLoading(false);
     }
-  }, [type]);
+  }, [type, subcategories]);
 
   useEffect(() => {
     if (isMount) {
       setIsMount(false);
+      // We could use initialData here but for consistency/simplicity in this new model,
+      // it's cleaner to just fetch what we need for each subcategory.
+      fetchInitialData(activeCategory, activeSubcategories, isGlutenFree);
       return;
     }
     
-    fetchProducts(currentPage, activeCategory, activeSubcategories, isGlutenFree);
-  }, [activeCategory, activeSubcategories, isGlutenFree, currentPage, fetchProducts]);
+    fetchInitialData(activeCategory, activeSubcategories, isGlutenFree);
+  }, [activeCategory, activeSubcategories, isGlutenFree, fetchInitialData]);
 
   const handleCategoryChange = (catId: string) => {
     setActiveCategory(catId);
-    setCurrentPage(1);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -111,28 +134,53 @@ export default function ProductListing({ type, initialData, subcategories }: Pro
     setActiveSubcategories(prev => 
       prev.includes(subId) ? prev.filter(s => s !== subId) : [...prev, subId]
     );
-    setCurrentPage(1);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleGlutenFreeToggle = () => {
     setIsGlutenFree(prev => !prev);
-    setCurrentPage(1);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handlePageChange = (p: number) => {
-    setCurrentPage(p);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+  const handleLoadMore = async (subId: string) => {
+    const current = dataBySub[subId];
+    if (!current || current.isLoadingMore) return;
+
+    setDataBySub(prev => ({
+      ...prev,
+      [subId]: { ...prev[subId], isLoadingMore: true }
+    }));
+
+    try {
+      const nextPage = current.page + 1;
+      const result = await getAllStoreProducts({
+        type,
+        category: activeCategory === 'ALL' ? undefined : activeCategory,
+        subcategory: subId,
+        isGlutenFree,
+        page: nextPage,
+        limit: 4
+      });
+
+      setDataBySub(prev => ({
+        ...prev,
+        [subId]: {
+          products: [...prev[subId].products, ...result.products],
+          page: nextPage,
+          hasMore: result.currentPage < result.totalPages,
+          isLoadingMore: false
+        }
+      }));
+    } catch (error) {
+      console.error(`Failed to load more for subcategory ${subId}:`, error);
+      setDataBySub(prev => ({
+        ...prev,
+        [subId]: { ...prev[subId], isLoadingMore: false }
+      }));
+    }
   };
 
-  // Group products by subcategory ID
-  const groupedProducts = products.reduce((acc: any, product) => {
-    const subId = product.subcategoryId || 'OTHER';
-    if (!acc[subId]) acc[subId] = [];
-    acc[subId].push(product);
-    return acc;
-  }, {});
+  // No longer need global groupedProducts as it's handled by dataBySub
 
   return (
     <div className="flex flex-col lg:flex-row gap-12 py-12">
@@ -247,35 +295,72 @@ export default function ProductListing({ type, initialData, subcategories }: Pro
             >
               <div className="size-12 border-4 border-primary border-t-transparent rounded-full animate-spin shadow-lg shadow-primary/20"></div>
             </motion.div>
-          ) : products.length > 0 ? (
+          ) : Object.keys(dataBySub).length > 0 ? (
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="space-y-24"
+              className="space-y-32"
             >
               {filteredSubcategories.map((sub) => {
-                const subProducts = groupedProducts[sub.id];
-                if (!subProducts || subProducts.length === 0) return null;
+                const subData = dataBySub[sub.id];
+                if (!subData || subData.products.length === 0) return null;
 
                 const label = locale === 'en' ? sub.nameEn : sub.nameFr;
 
                 return (
-                  <section key={sub.id}>
+                  <section key={sub.id} className="relative">
                     <div className="flex items-center gap-6 mb-12">
-                      <h2 className="font-serif text-3xl font-black text-forest-green dark:text-soft-cream whitespace-nowrap">
+                      <h2 className="font-serif text-4xl font-black text-forest-green dark:text-soft-cream whitespace-nowrap">
                         {label}
                       </h2>
                       <div className="h-px bg-forest-green/10 dark:bg-soft-cream/10 flex-1"></div>
-                      <span className="text-xs font-black uppercase tracking-widest text-forest-green/30 px-3 py-1 bg-forest-green/5 rounded-full">
-                        {subProducts.length} {locale === 'en' ? 'items' : 'produits'}
+                      <span className="text-[10px] font-black uppercase tracking-[0.2em] text-forest-green/40 px-4 py-2 bg-forest-green/5 dark:bg-soft-cream/5 rounded-full border border-forest-green/5">
+                         {locale === 'en' ? 'Collection' : 'Collection'}
                       </span>
                     </div>
                     
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 md:gap-10">
-                      {subProducts.map((p: any) => (
-                        <ProductCard key={p.id} product={p} />
-                      ))}
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 md:gap-12">
+                      <AnimatePresence mode="popLayout">
+                        {subData.products.map((p: any) => (
+                          <motion.div
+                            key={p.id}
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            layout
+                          >
+                            <ProductCard product={p} />
+                          </motion.div>
+                        ))}
+                      </AnimatePresence>
                     </div>
+
+                    {/* Load More Button for this subcategory */}
+                    {subData.hasMore && (
+                      <div className="mt-16 flex justify-center">
+                        <button
+                          onClick={() => handleLoadMore(sub.id)}
+                          disabled={subData.isLoadingMore}
+                          className="group relative px-12 py-4 rounded-full overflow-hidden transition-all active:scale-95 disabled:opacity-70"
+                        >
+                          <div className="absolute inset-0 bg-forest-green dark:bg-primary opacity-5 group-hover:opacity-10 transition-opacity" />
+                          <div className="absolute inset-0 border border-forest-green/10 dark:border-primary/20 rounded-full group-hover:border-forest-green/30 transition-colors" />
+                          
+                          <div className="relative flex items-center gap-3">
+                            {subData.isLoadingMore ? (
+                              <div className="size-5 border-2 border-forest-green/30 border-t-forest-green dark:border-primary/30 dark:border-t-primary rounded-full animate-spin" />
+                            ) : (
+                              <span className="material-symbols-outlined text-xl transition-transform group-hover:translate-y-1">expand_more</span>
+                            )}
+                            <span className="text-sm font-black uppercase tracking-[0.2em] text-forest-green dark:text-soft-cream">
+                              {subData.isLoadingMore 
+                                ? (locale === 'en' ? 'Loading...' : 'Chargement...') 
+                                : (locale === 'en' ? 'Show More' : 'Voir plus')
+                              }
+                            </span>
+                          </div>
+                        </button>
+                      </div>
+                    )}
                   </section>
                 );
               })}
@@ -293,7 +378,6 @@ export default function ProductListing({ type, initialData, subcategories }: Pro
                   setActiveCategory('ALL');
                   setActiveSubcategories([]);
                   setIsGlutenFree(false);
-                  setCurrentPage(1);
                 }}
                 className="mt-8 px-8 py-3 bg-forest-green text-white dark:bg-primary dark:text-forest-green rounded-xl font-bold shadow-xl shadow-forest-green/20 hover:scale-105 active:scale-95 transition-all"
               >
@@ -303,24 +387,6 @@ export default function ProductListing({ type, initialData, subcategories }: Pro
           )}
         </AnimatePresence>
 
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="mt-24 flex justify-center gap-3">
-            {Array.from({ length: totalPages }).map((_, i) => (
-              <button
-                key={i}
-                onClick={() => handlePageChange(i + 1)}
-                className={`size-12 rounded-xl font-black transition-all shadow-sm ${
-                  currentPage === i + 1
-                  ? 'bg-forest-green text-white dark:bg-primary dark:text-forest-green shadow-xl scale-110'
-                  : 'bg-white dark:bg-soft-cream/5 border border-forest-green/10 hover:border-primary text-forest-green dark:text-soft-cream'
-                }`}
-              >
-                {i + 1}
-              </button>
-            ))}
-          </div>
-        )}
       </main>
     </div>
   );

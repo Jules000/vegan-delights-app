@@ -4,10 +4,33 @@ import { getTranslations } from "next-intl/server";
 
 export default async function ShopPage() {
   const t = await getTranslations('Index');
-  const [initialData, subcategories] = await Promise.all([
-    getAllStoreProducts({ type: 'SHOP', limit: 12 }),
-    getStoreSubcategories('SHOP')
-  ]);
+  const subcategories = await getStoreSubcategories('SHOP');
+  
+  // Fetch first 4 products for each subcategory to provide meaningful initial data
+  const productsBySub = await Promise.all(
+    subcategories.map(async (sub) => {
+      const result = await getAllStoreProducts({
+        type: 'SHOP',
+        subcategory: sub.id,
+        limit: 4
+      });
+      return { subId: sub.id, ...result };
+    })
+  );
+
+  const initialData = {
+    productsBySub: productsBySub.reduce((acc: any, curr) => {
+      if (curr.products.length > 0) {
+        acc[curr.subId] = {
+          products: curr.products,
+          page: 1,
+          hasMore: curr.currentPage < curr.totalPages,
+          isLoadingMore: false
+        };
+      }
+      return acc;
+    }, {})
+  };
 
   return (
     <div className="max-w-7xl mx-auto px-6 lg:px-20 py-16">
