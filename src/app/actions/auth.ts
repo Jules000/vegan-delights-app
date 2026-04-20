@@ -32,8 +32,17 @@ export async function registerUser(prevState: any, formData: FormData) {
           name: `${firstName} ${lastName}`
         }
       });
+      const locale = formData.get("locale") as string || "fr";
+      const rawCallbackUrl = formData.get("callbackUrl") as string;
+      const cleanPath = (rawCallbackUrl && rawCallbackUrl !== 'undefined' && rawCallbackUrl.startsWith('/')) ? rawCallbackUrl : "/";
+      
       await setSession(user.id, user.email, user.name);
-      redirect("/"); // Rediriger vers l'accueil comme convenu
+
+      if (cleanPath.startsWith("/admin")) {
+        redirect(cleanPath);
+      } else {
+        redirect(`/${locale}${cleanPath}`);
+      }
     } else {
       return { error: "Un compte avec cette adresse email existe déjà." };
     }
@@ -49,8 +58,17 @@ export async function registerUser(prevState: any, formData: FormData) {
     },
   });
 
+  const locale = formData.get("locale") as string || "fr";
+  const rawCallbackUrl = formData.get("callbackUrl") as string;
+  const cleanPath = (rawCallbackUrl && rawCallbackUrl !== 'undefined' && rawCallbackUrl.startsWith('/')) ? rawCallbackUrl : "/";
+  
   await setSession(user.id, user.email, user.name);
-  redirect("/");
+
+  if (cleanPath.startsWith("/admin")) {
+    redirect(cleanPath);
+  } else {
+    redirect(`/${locale}${cleanPath}`);
+  }
 }
 
 export async function loginUser(prevState: any, formData: FormData) {
@@ -71,8 +89,17 @@ export async function loginUser(prevState: any, formData: FormData) {
     return { error: "Identifiants incorrects." };
   }
 
+  const locale = formData.get("locale") as string || "fr";
+  const rawCallbackUrl = formData.get("callbackUrl") as string;
+  const cleanPath = (rawCallbackUrl && rawCallbackUrl !== 'undefined' && rawCallbackUrl.startsWith('/')) ? rawCallbackUrl : "/";
+  
   await setSession(user.id, user.email, user.name);
-  redirect("/");
+
+  if (cleanPath.startsWith("/admin")) {
+    redirect(cleanPath);
+  } else {
+    redirect(`/${locale}${cleanPath}`);
+  }
 }
 
 export async function logoutUser() {

@@ -1,6 +1,13 @@
 import { Link } from '@/i18n/routing';
+import { getStoreSubcategories } from '@/app/actions/store';
+import { useLocale } from 'next-intl';
 
-export default function Footer() {
+export default async function Footer() {
+  const [restaurantSubs, shopSubs] = await Promise.all([
+    getStoreSubcategories('RESTAURANT'),
+    getStoreSubcategories('SHOP')
+  ]);
+
   return (
     <footer className="bg-forest-green text-white py-16 border-t border-white/5 px-6 lg:px-20 mt-auto">
       <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-12">
@@ -21,26 +28,44 @@ export default function Footer() {
             </a>
           </div>
         </div>
+
+        {/* Dynamic Restaurant Subcategories */}
         <div>
-          <h5 className="font-bold mb-6 text-primary uppercase text-xs tracking-widest">Shop</h5>
+          <h5 className="font-bold mb-6 text-primary uppercase text-xs tracking-widest leading-none">Restaurant</h5>
           <ul className="space-y-4 text-sm text-white/60">
-            <li><Link className="hover:text-white transition-colors" href="/products">Our Cheeses</Link></li>
-            <li><Link className="hover:text-white transition-colors" href="/products">Meat Alternatives</Link></li>
-            <li><Link className="hover:text-white transition-colors" href="/products">Gift Cards</Link></li>
-            <li><Link className="hover:text-white transition-colors" href="/products">Bulk Orders</Link></li>
+            {restaurantSubs.slice(0, 5).map((sub) => (
+              <li key={sub.id}>
+                <Link className="hover:text-white transition-colors" href={`/restaurant?subcategory=${sub.id}`}>
+                  {sub.nameEn}
+                </Link>
+              </li>
+            ))}
+            {restaurantSubs.length === 0 && (
+              <li><Link className="hover:text-white transition-colors" href="/restaurant">Full Menu</Link></li>
+            )}
           </ul>
         </div>
+
+        {/* Dynamic Shop Subcategories */}
         <div>
-          <h5 className="font-bold mb-6 text-primary uppercase text-xs tracking-widest">Support</h5>
+          <h5 className="font-bold mb-6 text-primary uppercase text-xs tracking-widest leading-none">Boutique</h5>
           <ul className="space-y-4 text-sm text-white/60">
-            <li><a className="hover:text-white transition-colors" href="#">Delivery Info</a></li>
-            <li><a className="hover:text-white transition-colors" href="#">Return Policy</a></li>
-            <li><a className="hover:text-white transition-colors" href="#">Wholesale</a></li>
-            <li><a className="hover:text-white transition-colors" href="#">FAQ</a></li>
+            {shopSubs.slice(0, 5).map((sub) => (
+              <li key={sub.id}>
+                <Link className="hover:text-white transition-colors" href={`/shop?subcategory=${sub.id}`}>
+                  {sub.nameEn}
+                </Link>
+              </li>
+            ))}
+            {shopSubs.length === 0 && (
+              <li><Link className="hover:text-white transition-colors" href="/shop">Our Collection</Link></li>
+            )}
+            <li><Link className="hover:text-white transition-colors" href="/shop">Gift Cards</Link></li>
           </ul>
         </div>
+
         <div>
-          <h5 className="font-bold mb-6 text-primary uppercase text-xs tracking-widest">Company</h5>
+          <h5 className="font-bold mb-6 text-primary uppercase text-xs tracking-widest leading-none">Company</h5>
           <ul className="space-y-4 text-sm text-white/60">
             <li><a className="hover:text-white transition-colors" href="#">Our Story</a></li>
             <li><a className="hover:text-white transition-colors" href="#">Sustainability</a></li>

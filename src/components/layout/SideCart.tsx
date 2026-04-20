@@ -134,6 +134,7 @@ export default function SideCart() {
                         src={item.image || 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=2070'} 
                         alt={locale === 'en' ? item.nameEn : item.nameFr} 
                         fill 
+                        sizes="80px"
                         className="object-cover"
                       />
                     </div>

@@ -4,7 +4,14 @@ import type { NextConfig } from "next";
 const withNextIntl = createNextIntlPlugin();
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  turbopack: {
+    root: 'C:\\Users\\vandi\\Downloads\\stitch_vegan_delights_homepage (1)\\vegan-delights-app',
+  },
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '50mb',
+    },
+  },
 };
 
 export default withNextIntl(nextConfig);

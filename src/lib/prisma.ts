@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client'; // Refresh client types
+import { PrismaClient } from '@prisma/client'; // Refresh client types v2
 import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
 

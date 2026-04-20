@@ -3,17 +3,24 @@
 import { Link } from '@/i18n/routing';
 import { useActionState } from 'react';
 import { loginUser } from '@/app/actions/auth';
+import { useSearchParams } from 'next/navigation';
+import { useLocale } from 'next-intl';
 
 const initialState = { error: '' };
 
 export default function LoginPage() {
   const [state, formAction, isPending] = useActionState(loginUser as any, initialState);
+  const locale = useLocale();
+  const searchParams = useSearchParams();
+  const rawCallbackUrl = searchParams.get('callbackUrl');
+  // Sanitize callbackUrl to prevent 'undefined' or empty strings
+  const callbackUrl = (rawCallbackUrl && rawCallbackUrl !== 'undefined' && rawCallbackUrl !== 'null') ? rawCallbackUrl : '/';
 
   return (
     <div className="min-h-[80vh] flex items-center justify-center p-6 relative">
       <div 
         className="absolute inset-0 bg-cover bg-center grayscale mix-blend-multiply opacity-20 dark:opacity-5" 
-        style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuATlN5K3YzlvzC_Me5_f72VWyVWTZBqN3bjcuFXkqEUrpR7PB9FbLdnTLikyR2KIvXKIPCfu4s16w-IyD_I1V_AH0B6JPE7I8V2ZZFoNqPuMWx0-Lk0RB0eVhOdOtT1vRnSD0NNRYhd8f-tmF8-UQlL18CiSmPU-rfPctnBktimfpBzhbR6aGvc44lSInYEjLhoCk7i8XekPHu6sidDigOa5GshIV2IOhI9z9ISuZ1gtIORzl0A1tRGqwsNZSbLLz7Rraf5_DPvi-tq')" }}
+        style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuATlN5K3YzlvzC_Me5_f72VWyVWTZBqN3bjcuFXkqEUrpR7PB9FbLdnTLikyR2KIvXKIPCfu4s16w-IyD_I1V_AH0B6JPE7I8V2ZZFoNqPuMWx0-Lk0RB0eVhOtT1vRnSD0NNRYhd8f-tmF8-UQlL18CiSmPU-rfPctnBktimfpBzhbR6aGvc44lSInYEjLhoCk7i8XekPHu6sidDigOa5GshIV2IOhI9z9ISuZ1gtIORzl0A1tRGqwsNZSbLLz7Rraf5_DPvi-tq')" }}
       />
       
       <div className="relative w-full max-w-md bg-white/80 dark:bg-background-dark/80 backdrop-blur-xl border border-forest-green/10 p-10 rounded-3xl shadow-2xl">
@@ -26,6 +33,9 @@ export default function LoginPage() {
         </div>
 
         <form action={formAction} className="space-y-5 flex flex-col items-center">
+          <input type="hidden" name="callbackUrl" value={callbackUrl || ''} />
+          <input type="hidden" name="locale" value={locale} />
+          
           {state?.error && (
             <div className="w-full bg-red-100 text-red-600 p-3 rounded-lg text-sm text-center">
               {state.error}
@@ -73,7 +83,7 @@ export default function LoginPage() {
         </form>
 
         <p className="text-center text-xs font-bold text-forest-green/50 mt-10">
-          Nouveau sur Vegan Delights ? <Link href="/register" className="text-primary hover:underline ml-1">Créer un compte</Link>
+          Nouveau sur Vegan Delights ? <Link href={callbackUrl ? `/register?callbackUrl=${callbackUrl}` : "/register"} className="text-primary hover:underline ml-1">Créer un compte</Link>
         </p>
       </div>
     </div>

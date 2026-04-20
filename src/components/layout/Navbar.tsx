@@ -56,10 +56,10 @@ export default function Navbar({ session }: { session: any }) {
               <h1 className="font-serif text-2xl font-black tracking-tight dark:text-white">Vegan Delights</h1>
             </Link>
             <nav className="hidden lg:flex items-center gap-8">
-              <Link className="text-sm font-semibold hover:text-primary transition-colors" href="/products">{t('nav_dairy_free')}</Link>
-              <Link className="text-sm font-semibold hover:text-primary transition-colors" href="/products">{t('nav_meat_alt')}</Link>
-              <Link className="text-sm font-semibold hover:text-primary transition-colors" href="/products">{t('nav_pantry')}</Link>
-              <Link className="text-sm font-semibold hover:text-primary transition-colors" href="/products">{t('nav_recipes')}</Link>
+              <Link className="text-sm font-semibold hover:text-primary transition-colors" href="/">{t('nav_home')}</Link>
+              <Link className="text-sm font-semibold hover:text-primary transition-colors" href="/restaurant">{t('nav_restaurant')}</Link>
+              <Link className="text-sm font-semibold hover:text-primary transition-colors" href="/shop">{t('nav_shop')}</Link>
+              <Link className="text-sm font-semibold hover:text-primary transition-colors" href="/about">{t('nav_about')}</Link>
             </nav>
           </div>
           <div className="flex items-center gap-4">
@@ -87,7 +87,7 @@ export default function Navbar({ session }: { session: any }) {
                 </form>
               </div>
             ) : (
-              <Link href="/login" className="p-2 hover:bg-primary/10 rounded-full transition-colors">
+              <Link href={`/login?callbackUrl=${pathname || '/'}`} className="p-2 hover:bg-primary/10 rounded-full transition-colors">
                 <span className="material-symbols-outlined">person</span>
               </Link>
             )}

@@ -46,11 +46,55 @@ export default function ProductCard({ product }: { product: any }) {
             className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110" 
             style={{ backgroundImage: `url('${product.image}')` }}
           />
-          {product.category && (
-            <div className="absolute top-4 left-4 bg-white/90 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider text-terracotta shadow-sm">
-              {product.category}
-            </div>
-          )}
+          <div className="absolute top-4 left-4 flex flex-col gap-2 z-10">
+            {product.category && (
+              <div className="bg-white/90 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider text-terracotta shadow-sm">
+                {product.category}
+              </div>
+            )}
+            {product.isGlutenFree && (
+              <div className="bg-primary/95 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider text-forest-green shadow-sm flex items-center gap-1">
+                <span className="material-symbols-outlined text-[12px]">eco</span>
+                {locale === 'en' ? 'Gluten Free' : 'Sans Gluten'}
+              </div>
+            )}
+          </div>
+
+          {/* Floating Quick Add Button */}
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setIsAdding(true);
+              addToCart({
+                id: product.id,
+                nameFr: product.nameFr,
+                nameEn: product.nameEn,
+                price: product.price,
+                image: product.image
+              });
+              setTimeout(() => {
+                setIsAdding(false);
+                setIsSuccess(true);
+                setTimeout(() => setIsSuccess(false), 2000);
+              }, 500);
+            }}
+            disabled={isAdding || isSuccess}
+            className={`absolute bottom-4 right-4 z-20 size-12 rounded-full flex items-center justify-center shadow-xl transition-all active:scale-90 ${
+              isSuccess 
+                ? 'bg-white text-forest-green' 
+                : 'bg-primary text-forest-green hover:scale-110 hover:brightness-110'
+            } disabled:opacity-80`}
+            title={locale === 'en' ? 'Add to cart' : 'Ajouter au panier'}
+          >
+            {isAdding ? (
+              <span className="material-symbols-outlined animate-spin text-2xl">refresh</span>
+            ) : isSuccess ? (
+              <span className="material-symbols-outlined text-2xl">check</span>
+            ) : (
+              <span className="material-symbols-outlined text-2xl font-bold">add</span>
+            )}
+          </button>
           
           {/* Interactive Hover Overlay */}
           <div className="nutritional-overlay absolute inset-0 bg-forest-green/80 backdrop-blur-sm p-6 flex flex-col justify-end text-white">
@@ -82,7 +126,13 @@ export default function ProductCard({ product }: { product: any }) {
               onClick={(e) => {
                 e.preventDefault(); // Stop link navigation
                 setIsAdding(true);
-                addToCart(product);
+                addToCart({
+                  id: product.id,
+                  nameFr: product.nameFr,
+                  nameEn: product.nameEn,
+                  price: product.price,
+                  image: product.image
+                });
                 setTimeout(() => {
                   setIsAdding(false);
                   setIsSuccess(true);

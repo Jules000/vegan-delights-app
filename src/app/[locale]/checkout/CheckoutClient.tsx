@@ -148,10 +148,10 @@ export default function CheckoutClient({ session }: { session: any }) {
                     Afin de finaliser votre commande et assurer le suivi de livraison, une simple identification est requise.
                   </p>
                   <div className="flex flex-col gap-3">
-                    <Link href="/login" className="w-full bg-forest-green text-white font-bold py-4 rounded-xl hover:bg-forest-green/90 transition-all">
+                    <Link href="/login?callbackUrl=/checkout" className="w-full bg-forest-green text-white font-bold py-4 rounded-xl hover:bg-forest-green/90 transition-all text-center">
                       Se connecter
                     </Link>
-                    <Link href="/register" className="w-full bg-white border border-forest-green/20 text-forest-green font-bold py-4 rounded-xl hover:bg-forest-green/5 transition-all">
+                    <Link href="/register?callbackUrl=/checkout" className="w-full bg-white border border-forest-green/20 text-forest-green font-bold py-4 rounded-xl hover:bg-forest-green/5 transition-all text-center">
                       Créer un compte
                     </Link>
                   </div>

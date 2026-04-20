@@ -40,7 +40,8 @@ export default async function AdminProductsPage() {
               <tr>
                 <th className="px-6 py-4">Image</th>
                 <th className="px-6 py-4">Nom (FR)</th>
-                <th className="px-6 py-4">Nom (EN)</th>
+                <th className="px-6 py-4">Type</th>
+                <th className="px-6 py-4">Catégorie</th>
                 <th className="px-6 py-4">Prix</th>
                 <th className="px-6 py-4">Stock</th>
                 <th className="px-6 py-4 text-right">Actions</th>
@@ -60,7 +61,16 @@ export default async function AdminProductsPage() {
                       <p className="text-[10px] text-admin-forest/40 uppercase font-black">SKU: {p.sku}</p>
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-sm font-medium text-admin-forest/70">{p.nameEn}</td>
+                  <td className="px-6 py-4">
+                    <span className={`px-2 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${p.productType === 'RESTAURANT' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'}`}>
+                      {p.productType === 'RESTAURANT' ? '🍴 Restaurant' : '🛍️ Boutique'}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4">
+                    <span className="text-[10px] font-bold text-admin-forest/60 uppercase bg-admin-cream px-2 py-1 rounded">
+                      {p.category}
+                    </span>
+                  </td>
                   <td className="px-6 py-4 text-sm font-bold text-admin-forest">{p.price.toFixed(2)} FCFA</td>
                   <td className="px-6 py-4">
                     <div className="flex flex-col gap-1 items-start">

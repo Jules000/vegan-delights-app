@@ -1,6 +1,10 @@
 {
   "Index": {
     "title": "Vegan Delights | Dîner Gastronomique Végétalien",
+    "nav_home": "Accueil",
+    "nav_restaurant": "Commander à manger",
+    "nav_shop": "Boutique",
+    "nav_about": "À Propos",
     "nav_dairy_free": "Sans Lait",
     "nav_meat_alt": "Alternatives à la Viande",
     "nav_pantry": "Épicerie Bio",

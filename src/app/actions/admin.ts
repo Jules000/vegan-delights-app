@@ -3,8 +3,20 @@
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import path from "path";
-import { writeFile } from "fs/promises";
+import { writeFile, appendFile } from "fs/promises";
 import { redirect } from "next/navigation";
+
+// Logging helper for Server Actions
+async function logActionError(action: string, error: any) {
+  const logPath = path.join(process.cwd(), "src/app/actions/error-log.txt");
+  const timestamp = new Date().toISOString();
+  const message = `[${timestamp}] ${action}: ${error instanceof Error ? error.message : JSON.stringify(error)}\n${error instanceof Error ? error.stack : ""}\n---\n`;
+  try {
+    await appendFile(logPath, message);
+  } catch (e) {
+    console.error("FAILED TO LOG ERROR TO FILE:", e);
+  }
+}
 
 // Dashboard
 export async function getDashboardStats() {
@@ -45,18 +57,22 @@ export async function getAdminProductById(id: string) {
   });
 }
 
-export async function createAdminProduct(formData: FormData) {
+export async function createAdminProduct(prevState: any, formData: FormData) {
   // Parsing simple fields
   const nameFr = formData.get("nameFr") as string;
   const nameEn = formData.get("nameEn") as string;
   const descFr = formData.get("descFr") as string;
   const descEn = formData.get("descEn") as string;
-  const price = parseFloat(formData.get("price") as string);
-  const stock = parseInt(formData.get("stock") as string, 10);
-  const sku = formData.get("sku") as string;
-  
-  // Category fallback
-  const category = "Catalogue"; 
+  const price = parseFloat(formData.get("price") as string) || 0;
+  const stock = parseInt(formData.get("stock") as string, 10) || 0;
+  const sku = formData.get("sku") as string || `SKU-${Date.now()}`;
+  const productType = formData.get("productType") as any; // RESTAURANT or SHOP
+  const category = formData.get("category") as string; // VEGAN, VEGETARIAN, GLUTEN_FREE
+  const subcategoryId = (formData.get("subcategoryId") as string) || null;
+  const isGlutenFree = formData.get("isGlutenFree") === "true";
+  const menuDay = formData.get("menuDay") as any;
+  const bannerTextFr = formData.get("bannerTextFr") as string || "";
+  const bannerTextEn = formData.get("bannerTextEn") as string || "";
 
   // Image Upload Logic
   const imageFile = formData.get("image") as File;
@@ -75,36 +91,72 @@ export async function createAdminProduct(formData: FormData) {
     imageUrl = `/media/${uniqueName}`;
   }
 
-  // Extract Nutritional info dynamically (max 4)
-  const productData: any = {
-    nameFr,
-    nameEn,
-    descFr,
-    descEn,
-    price,
-    stock,
-    sku,
-    category,
-    image: imageUrl,
-  };
+  // Banner Image Upload Logic
+  const bannerImageFile = formData.get("bannerImage") as File;
+  let bannerImageUrl = null;
 
-  for (let i = 1; i <= 4; i++) {
-    const lFr = formData.get(`nutritionLabel${i}Fr`) as string;
-    const lEn = formData.get(`nutritionLabel${i}En`) as string;
-    const val = formData.get(`nutritionValue${i}`) as string;
-
-    if (lFr || lEn || val) {
-      productData[`nutritionLabel${i}Fr`] = lFr || "";
-      productData[`nutritionLabel${i}En`] = lEn || "";
-      productData[`nutritionValue${i}`] = val || "";
-    }
+  if (bannerImageFile && bannerImageFile.name && bannerImageFile.size > 0) {
+    const bBytes = await bannerImageFile.arrayBuffer();
+    const bBuffer = Buffer.from(bBytes);
+    const bSafeName = bannerImageFile.name.replace(/[^a-zA-Z0-9.\-_]/g, "_");
+    const bUniqueName = `banner_${Date.now()}_${bSafeName}`;
+    const bUploadPath = path.join(process.cwd(), "public", "media", bUniqueName);
+    
+    await writeFile(bUploadPath, bBuffer);
+    bannerImageUrl = `/media/${bUniqueName}`;
   }
 
-  await prisma.product.create({
-    data: productData
-  });
+  // Handle exclusivity of Menu of the Day for a specific day
+  try {
+    if (menuDay && menuDay !== "NONE") {
+      await prisma.product.updateMany({
+        where: { menuDay: menuDay },
+        data: { menuDay: null }
+      });
+    }
 
-  revalidatePath("/admin/products");
+    // Extract Nutritional info dynamically (max 4)
+    const productData: any = {
+      nameFr,
+      nameEn,
+      descFr,
+      descEn,
+      price,
+      stock,
+      sku,
+      productType,
+      category,
+      subcategoryId,
+      isGlutenFree,
+      menuDay: (menuDay && menuDay !== "NONE") ? menuDay : null,
+      image: imageUrl,
+      bannerImage: bannerImageUrl,
+      bannerTextFr,
+      bannerTextEn,
+    };
+
+    for (let i = 1; i <= 4; i++) {
+      const lFr = formData.get(`nutritionLabel${i}Fr`) as string;
+      const lEn = formData.get(`nutritionLabel${i}En`) as string;
+      const val = formData.get(`nutritionValue${i}`) as string;
+
+      if (lFr || lEn || val) {
+        productData[`nutritionLabel${i}Fr`] = lFr || "";
+        productData[`nutritionLabel${i}En`] = lEn || "";
+        productData[`nutritionValue${i}`] = val || "";
+      }
+    }
+
+    await prisma.product.create({
+      data: productData
+    });
+
+    revalidatePath("/admin/products");
+  } catch (error) {
+    await logActionError("createAdminProduct", error);
+    return { success: false, error: error instanceof Error ? error.message : "Unknown error" };
+  }
+
   redirect("/admin/products");
 }
 
@@ -116,12 +168,19 @@ export async function updateAdminProduct(formData: FormData) {
   const nameEn = formData.get("nameEn") as string;
   const descFr = formData.get("descFr") as string;
   const descEn = formData.get("descEn") as string;
-  const price = parseFloat(formData.get("price") as string);
-  const stock = parseInt(formData.get("stock") as string, 10);
-  const sku = formData.get("sku") as string;
+  const sku = formData.get("sku") as string || `SKU-${Date.now()}`;
+  const price = parseFloat(formData.get("price") as string) || 0;
+  const stock = parseInt(formData.get("stock") as string, 10) || 0;
+  const productType = formData.get("productType") as any;
+  const category = formData.get("category") as string;
+  const subcategoryId = (formData.get("subcategoryId") as string) || null;
+  const isGlutenFree = formData.get("isGlutenFree") === "true";
+  const menuDay = formData.get("menuDay") as any;
+  const bannerTextFr = formData.get("bannerTextFr") as string || "";
+  const bannerTextEn = formData.get("bannerTextEn") as string || "";
 
   const productData: any = {
-    nameFr, nameEn, descFr, descEn, price, stock, sku,
+    nameFr, nameEn, descFr, descEn, price, stock, sku, productType, category, subcategoryId, isGlutenFree, menuDay: (menuDay && menuDay !== "NONE") ? menuDay : null, bannerTextFr, bannerTextEn
   };
 
   const imageFile = formData.get("image") as File | null;
@@ -136,21 +195,50 @@ export async function updateAdminProduct(formData: FormData) {
     productData.image = `/media/${uniqueName}`;
   }
 
-  for (let i = 1; i <= 4; i++) {
-    const lFr = formData.get(`nutritionLabel${i}Fr`) as string;
-    const lEn = formData.get(`nutritionLabel${i}En`) as string;
-    const val = formData.get(`nutritionValue${i}`) as string;
-    productData[`nutritionLabel${i}Fr`] = lFr || "";
-    productData[`nutritionLabel${i}En`] = lEn || "";
-    productData[`nutritionValue${i}`] = val || "";
+  const bannerImageFile = formData.get("bannerImage") as File | null;
+  if (bannerImageFile && bannerImageFile.name && bannerImageFile.size > 0) {
+    const bBytes = await bannerImageFile.arrayBuffer();
+    const bBuffer = Buffer.from(bBytes);
+    const bSafeName = bannerImageFile.name.replace(/[^a-zA-Z0-9.\-_]/g, "_");
+    const bUniqueName = `banner_${Date.now()}_${bSafeName}`;
+    const bUploadPath = path.join(process.cwd(), "public", "media", bUniqueName);
+    
+    await writeFile(bUploadPath, bBuffer);
+    productData.bannerImage = `/media/${bUniqueName}`;
   }
 
-  await prisma.product.update({
-    where: { id },
-    data: productData
-  });
+  // Handle exclusivity of Menu of the Day for a specific day
+  try {
+    if (menuDay && menuDay !== "NONE") {
+      await prisma.product.updateMany({
+        where: { 
+          menuDay: menuDay,
+          NOT: { id: id }
+        },
+        data: { menuDay: null }
+      });
+    }
 
-  revalidatePath("/admin/products");
+    for (let i = 1; i <= 4; i++) {
+      const lFr = formData.get(`nutritionLabel${i}Fr`) as string;
+      const lEn = formData.get(`nutritionLabel${i}En`) as string;
+      const val = formData.get(`nutritionValue${i}`) as string;
+      productData[`nutritionLabel${i}Fr`] = lFr || "";
+      productData[`nutritionLabel${i}En`] = lEn || "";
+      productData[`nutritionValue${i}`] = val || "";
+    }
+
+    await prisma.product.update({
+      where: { id },
+      data: productData
+    });
+
+    revalidatePath("/admin/products");
+  } catch (error) {
+    console.error("UPDATE_ADMIN_PRODUCT_ERROR:", error);
+    throw error;
+  }
+
   redirect("/admin/products");
 }
 
@@ -278,4 +366,72 @@ export async function getInvoiceById(id: string) {
       }
     }
   });
+}
+// Subcategories
+export async function getAdminSubcategories() {
+  return await prisma.subcategory.findMany({
+    orderBy: [
+        { productType: 'asc' },
+        { order: 'asc' }
+    ],
+  });
+}
+
+export async function createAdminSubcategory(formData: FormData) {
+  const nameFr = formData.get("nameFr") as string;
+  const nameEn = formData.get("nameEn") as string;
+  const productType = formData.get("productType") as any;
+  const order = parseInt(formData.get("order") as string, 10) || 0;
+
+  // Generate slug from nameEn
+  const slug = nameEn.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+
+  await prisma.subcategory.create({
+    data: {
+      nameFr,
+      nameEn,
+      slug,
+      productType,
+      order,
+    },
+  });
+
+  revalidatePath("/admin/subcategories");
+  revalidatePath("/admin/products");
+}
+
+export async function updateAdminSubcategory(formData: FormData) {
+  const id = formData.get("id") as string;
+  const nameFr = formData.get("nameFr") as string;
+  const nameEn = formData.get("nameEn") as string;
+  const productType = formData.get("productType") as any;
+  const order = parseInt(formData.get("order") as string, 10) || 0;
+
+  const slug = nameEn.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+
+  await prisma.subcategory.update({
+    where: { id },
+    data: {
+      nameFr,
+      nameEn,
+      slug,
+      productType,
+      order,
+    },
+  });
+
+  revalidatePath("/admin/subcategories");
+  revalidatePath("/admin/products");
+}
+
+export async function deleteAdminSubcategory(formData: FormData) {
+  const id = formData.get("id") as string;
+  if (!id) return;
+
+  await prisma.subcategory.delete({
+    where: { id },
+  });
+
+  revalidatePath("/admin/subcategories");
+  revalidatePath("/admin/products");
 }

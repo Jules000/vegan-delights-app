@@ -25,9 +25,13 @@ export default function AdminSidebar() {
             <span className="material-symbols-outlined">dashboard</span>
             <span className="text-sm font-semibold">Vue d'ensemble</span>
           </Link>
-          <Link href="/admin/products" className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${pathname.includes('/admin/products') ? 'bg-admin-primary text-white shadow-md shadow-admin-primary/20' : 'text-admin-forest/60 hover:bg-white/50'}`}>
+          <Link href="/admin/products" className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${pathname.includes('/admin/products') && !pathname.includes('/admin/subcategories') ? 'bg-admin-primary text-white shadow-md shadow-admin-primary/20' : 'text-admin-forest/60 hover:bg-white/50'}`}>
             <span className="material-symbols-outlined">inventory_2</span>
             <span className="text-sm font-semibold">Produits</span>
+          </Link>
+          <Link href="/admin/subcategories" className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${(pathname === '/admin/subcategories') ? 'bg-admin-primary text-white shadow-md shadow-admin-primary/20' : 'text-admin-forest/60 hover:bg-white/50'}`}>
+            <span className="material-symbols-outlined">category</span>
+            <span className="text-sm font-semibold">Sous-Catégories</span>
           </Link>
           <Link href="/admin/orders" className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${pathname.includes('/admin/orders') ? 'bg-admin-primary text-white shadow-md shadow-admin-primary/20' : 'text-admin-forest/60 hover:bg-white/50'}`}>
             <span className="material-symbols-outlined">shopping_cart</span>

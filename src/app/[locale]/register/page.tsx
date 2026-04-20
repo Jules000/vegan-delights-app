@@ -3,11 +3,18 @@
 import { Link } from '@/i18n/routing';
 import { useActionState } from 'react';
 import { registerUser } from '@/app/actions/auth';
+import { useSearchParams } from 'next/navigation';
+import { useLocale } from 'next-intl';
 
 const initialState = { error: '' };
 
 export default function RegisterPage() {
   const [state, formAction, isPending] = useActionState(registerUser as any, initialState);
+  const locale = useLocale();
+  const searchParams = useSearchParams();
+  const rawCallbackUrl = searchParams.get('callbackUrl');
+  // Sanitize callbackUrl to prevent 'undefined' or empty strings
+  const callbackUrl = (rawCallbackUrl && rawCallbackUrl !== 'undefined' && rawCallbackUrl !== 'null') ? rawCallbackUrl : '/';
 
   return (
     <div className="min-h-[80vh] flex items-center justify-center p-6 relative">
@@ -26,6 +33,9 @@ export default function RegisterPage() {
         </div>
 
         <form action={formAction} className="space-y-4 flex flex-col items-center">
+          <input type="hidden" name="callbackUrl" value={callbackUrl || ''} />
+          <input type="hidden" name="locale" value={locale} />
+          
           {state?.error && (
             <div className="w-full bg-red-100 text-red-600 p-3 rounded-lg text-sm text-center">
               {state.error}
@@ -90,7 +100,7 @@ export default function RegisterPage() {
         </form>
 
         <p className="text-center text-xs font-bold text-forest-green/50 mt-10">
-          Vous avez déjà un compte ? <Link href="/login" className="text-primary hover:underline ml-1">Connectez-vous</Link>
+          Vous avez déjà un compte ? <Link href={callbackUrl ? `/login?callbackUrl=${callbackUrl}` : "/login"} className="text-primary hover:underline ml-1">Connectez-vous</Link>
         </p>
       </div>
     </div>

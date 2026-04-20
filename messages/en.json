@@ -1,10 +1,10 @@
 {
   "Index": {
     "title": "Vegan Delights | Premium Plant-Based Dining",
-    "nav_dairy_free": "Dairy-Free",
-    "nav_meat_alt": "Meat Alternatives",
-    "nav_pantry": "Organic Pantry",
-    "nav_recipes": "Recipes",
+    "nav_home": "Home",
+    "nav_restaurant": "Order Food",
+    "nav_shop": "Shop Products",
+    "nav_about": "About Us",
     "search_placeholder": "Search flavors...",
     "hero_badge": "Nature's Finest Ingredients",
     "hero_headline_1": "Elegance on your plate.",
