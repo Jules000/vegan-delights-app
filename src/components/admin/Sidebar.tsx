@@ -45,6 +45,10 @@ export default function AdminSidebar() {
             <span className="material-symbols-outlined">receipt_long</span>
             <span className="text-sm font-semibold">Factures</span>
           </Link>
+          <Link href="/admin/newsletter" className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${pathname === '/admin/newsletter' ? 'bg-admin-primary text-white shadow-md shadow-admin-primary/20' : 'text-admin-forest/60 hover:bg-white/50'}`}>
+            <span className="material-symbols-outlined">campaign</span>
+            <span className="text-sm font-semibold">Newsletter</span>
+          </Link>
         </nav>
       </div>
 

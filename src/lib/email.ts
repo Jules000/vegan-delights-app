@@ -19,7 +19,135 @@ export const SENDER_EMAILS = {
   orders: 'orders@vegandelights.store',
   billing: 'billing@vegandelights.store',
   jules: 'jules-renaud@vegandelights.store',
+  marketing: 'marketing@vegandelights.store',
+  community: 'community@vegandelights.store',
 };
+
+/**
+ * Sends a premium-styled newsletter to multiple recipients.
+ */
+export async function sendNewsletterMassEmail(
+  recipients: string[], 
+  subject: string, 
+  content: string, 
+  senderKey: keyof typeof SENDER_EMAILS = 'hello'
+) {
+  const senderEmail = SENDER_EMAILS[senderKey] || SENDER_EMAILS.hello;
+  
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="utf-8">
+        <style>
+            body { 
+                font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; 
+                line-height: 1.6; 
+                color: #0d1b0d; 
+                margin: 0; 
+                padding: 0; 
+                background-color: #fdfaf6;
+            }
+            .container { 
+                max-width: 600px; 
+                margin: 40px auto; 
+                background: #ffffff; 
+                border-radius: 24px; 
+                overflow: hidden; 
+                box-shadow: 0 10px 30px rgba(13, 27, 13, 0.05);
+            }
+            .header { 
+                background-color: #0d1b0d; 
+                padding: 40px; 
+                text-align: center; 
+            }
+            .logo-icon {
+                display: inline-block;
+                width: 48px;
+                height: 48px;
+                background-color: #13ec13;
+                border-radius: 12px;
+                color: #0d1b0d;
+                font-size: 32px;
+                line-height: 48px;
+                font-weight: bold;
+                margin-bottom: 10px;
+            }
+            .header h1 { 
+                color: #ffffff; 
+                margin: 0; 
+                font-size: 24px; 
+                font-weight: 900;
+                text-transform: uppercase;
+                letter-spacing: 2px;
+            }
+            .content { 
+                padding: 50px 40px; 
+                color: #0d1b0d;
+                font-size: 16px;
+                white-space: pre-wrap; /* Preserve line breaks */
+            }
+            .footer { 
+                background-color: #f9f9f9; 
+                padding: 40px; 
+                text-align: center; 
+                font-size: 12px; 
+                color: #999; 
+                border-top: 1px solid #eee;
+            }
+            .social-links { margin-bottom: 20px; }
+            .social-links a { color: #0d1b0d; text-decoration: none; margin: 0 10px; font-weight: bold; }
+            .unsub { margin-top: 20px; font-size: 11px; opacity: 0.6; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <div class="logo-icon">🍀</div>
+                <h1>Vegan Delights</h1>
+            </div>
+            <div class="content">
+                ${content}
+            </div>
+            <div class="footer">
+                <div class="social-links">
+                    <a href="#">Instagram</a>
+                    <a href="#">Facebook</a>
+                    <a href="#">Youtube</a>
+                </div>
+                <p>&copy; ${new Date().getFullYear()} Vegan Delights Boutique & Restaurant.</p>
+                <p>Sustainable, ethical, and strictly delicious.</p>
+                <div class="unsub">
+                    Vous recevez cet email car vous êtes membre de la communauté Vegan Delights.<br>
+                    <a href="#" style="color: #666;">Se désabonner</a>
+                </div>
+            </div>
+        </div>
+    </body>
+    </html>
+  `;
+
+  // For bcc mailing in smaller batches (protection against SMTP limits and keeping privacy)
+  // We'll send in batches of 50
+  const batchSize = 50;
+  for (let i = 0; i < recipients.length; i += batchSize) {
+    const batch = recipients.slice(i, i + batchSize);
+    
+    try {
+      await transporter.sendMail({
+        from: `"Vegan Delights" <${senderEmail}>`,
+        to: senderEmail, // Sent to self
+        bcc: batch,      // Recipients in BCC for privacy
+        subject,
+        html,
+      });
+      console.log(`Mass Email batch ${Math.floor(i/batchSize) + 1} sent to ${batch.length} recipients.`);
+    } catch (error) {
+      console.error(`Failed to send mass email batch ${Math.floor(i/batchSize) + 1}:`, error);
+      throw error; 
+    }
+  }
+}
 
 export async function sendOtpEmail(email: string, name: string, otp: string, locale: string) {
   const isEn = locale === 'en';

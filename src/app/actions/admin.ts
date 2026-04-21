@@ -435,3 +435,60 @@ export async function deleteAdminSubcategory(formData: FormData) {
   revalidatePath("/admin/subcategories");
   revalidatePath("/admin/products");
 }
+
+// Newsletter
+export async function getNewsletterRecipientCounts() {
+  const [customerCount, subscriberCount] = await Promise.all([
+    prisma.customer.count({ where: { password: { not: null } } }), // Only actual account holders
+    prisma.subscriber.count()
+  ]);
+
+  // For total unique, we might need a more complex query or just handle it in the action
+  return {
+    customerCount,
+    subscriberCount,
+  };
+}
+
+export async function sendNewsletterAction(prevState: any, formData: FormData) {
+  const target = formData.get("target") as string; // 'subscribers', 'customers', 'all'
+  const senderKey = formData.get("sender") as any;
+  const subject = formData.get("subject") as string;
+  const content = formData.get("content") as string;
+
+  if (!subject || !content) {
+    return { error: "Veuillez remplir le sujet et le contenu." };
+  }
+
+  try {
+    let emails: string[] = [];
+
+    if (target === 'subscribers' || target === 'all') {
+      const subs = await prisma.subscriber.findMany({ select: { email: true } });
+      emails.push(...subs.map(s => s.email));
+    }
+
+    if (target === 'customers' || target === 'all') {
+      const custs = await prisma.customer.findMany({ 
+        where: { password: { not: null } },
+        select: { email: true } 
+      });
+      emails.push(...custs.map(c => c.email));
+    }
+
+    // Deduplicate
+    const uniqueEmails = Array.from(new Set(emails));
+
+    if (uniqueEmails.length === 0) {
+      return { error: "Aucun destinataire trouvé pour ce segment." };
+    }
+
+    const { sendNewsletterMassEmail } = await import("@/lib/email");
+    await sendNewsletterMassEmail(uniqueEmails, subject, content, senderKey);
+
+    return { success: true, count: uniqueEmails.length };
+  } catch (error) {
+    await logActionError("sendNewsletterAction", error);
+    return { error: "Une erreur est survenue lors de l'envoi du mailing." };
+  }
+}
