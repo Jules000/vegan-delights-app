@@ -71,7 +71,9 @@ export default function LoginPage() {
               <input type="checkbox" className="accent-primary w-4 h-4" />
               <span className="text-xs font-bold text-forest-green/60 group-hover:text-forest-green transition-colors">Se souvenir de moi</span>
             </label>
-            <a href="#" className="text-xs font-bold text-primary hover:underline">Mot de passe oublié ?</a>
+            <Link href="/forgot-password" title={locale === 'en' ? "Forgot password?" : "Mot de passe oublié ?"} className="text-xs font-bold text-primary hover:underline">
+              {locale === 'en' ? "Forgot password?" : "Mot de passe oublié ?"}
+            </Link>
           </div>
 
           <button 

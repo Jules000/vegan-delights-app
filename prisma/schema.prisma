@@ -96,6 +96,8 @@ model Customer {
   isVerified  Boolean  @default(false)
   otp         String?
   otpExpires  DateTime?
+  resetToken  String?  @unique
+  resetTokenExpires DateTime?
   totalSpent  Float    @default(0)
   orders      Order[]
   invoices    Invoice[]

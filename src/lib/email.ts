@@ -586,3 +586,166 @@ export async function sendNewsletterWelcomeEmail(email: string, locale: string) 
     console.error('Failed to send newsletter welcome email:', error);
   }
 }
+
+export async function sendPasswordResetEmail(email: string, name: string, token: string, locale: string) {
+  const isEn = locale === 'en';
+  const resetLink = `https://vegandelights.store/${locale}/reset-password?token=${token}`;
+  
+  const subject = isEn 
+    ? "Reset Your Vegan Delights Password" 
+    : "Réinitialisez votre mot de passe Vegan Delights";
+
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="utf-8">
+        <style>
+            body { 
+                font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; 
+                line-height: 1.6; 
+                color: #0d1b0d; 
+                margin: 0; 
+                padding: 0; 
+                background-color: #fdfaf6;
+            }
+            .container { 
+                max-width: 600px; 
+                margin: 40px auto; 
+                background: #ffffff; 
+                border-radius: 24px; 
+                overflow: hidden; 
+                box-shadow: 0 10px 30px rgba(13, 27, 13, 0.05);
+            }
+            .header { 
+                background-color: #0d1b0d; 
+                padding: 40px; 
+                text-align: center; 
+            }
+            .logo-icon {
+                display: inline-block;
+                width: 48px;
+                height: 48px;
+                background-color: #13ec13;
+                border-radius: 12px;
+                color: #0d1b0d;
+                font-size: 32px;
+                line-height: 48px;
+                font-weight: bold;
+                margin-bottom: 10px;
+            }
+            .header h1 { 
+                color: #ffffff; 
+                margin: 0; 
+                font-size: 24px; 
+                font-weight: 900;
+                text-transform: uppercase;
+                letter-spacing: 2px;
+            }
+            .content { 
+                padding: 50px 40px; 
+                text-align: center;
+            }
+            .security-badge {
+                display: inline-block;
+                padding: 6px 12px;
+                background-color: rgba(178, 90, 56, 0.1);
+                color: #b25a38;
+                font-weight: bold;
+                font-size: 12px;
+                border-radius: 99px;
+                margin-bottom: 25px;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+            }
+            h2 {
+                font-size: 28px;
+                margin-bottom: 20px;
+                color: #0d1b0d;
+                font-weight: 900;
+            }
+            p {
+                margin-bottom: 25px;
+                color: #666;
+                font-size: 16px;
+            }
+            .btn {
+                display: inline-block;
+                padding: 18px 40px;
+                background-color: #13ec13;
+                color: #0d1b0d;
+                text-decoration: none;
+                font-weight: 900;
+                border-radius: 99px;
+                margin: 20px 0;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                box-shadow: 0 10px 20px rgba(19, 236, 19, 0.2);
+            }
+            .expiry-notice {
+                font-size: 13px;
+                color: #b25a38;
+                font-weight: bold;
+                margin-top: 20px;
+            }
+            .footer { 
+                background-color: #f9f9f9; 
+                padding: 30px; 
+                text-align: center; 
+                font-size: 12px; 
+                color: #999; 
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <div class="logo-icon">🍀</div>
+                <h1>Vegan Delights</h1>
+            </div>
+            <div class="content">
+                <div class="security-badge">${isEn ? 'Account Recovery' : 'Récupération de compte'}</div>
+                <h2>${isEn ? 'Reset your password' : 'Réinitialisez votre mot de passe'}</h2>
+                <p>
+                    ${isEn 
+                      ? `Hello ${name}, we received a request to reset your password. Click the button below to choose a new one.` 
+                      : `Bonjour ${name}, nous avons reçu une demande de réinitialisation de votre mot de passe. Cliquez sur le bouton ci-dessous pour en choisir un nouveau.`}
+                </p>
+                
+                <a href="${resetLink}" class="btn">
+                    ${isEn ? 'Reset My Password' : 'Réinitialiser mon mot de passe'}
+                </a>
+
+                <p class="expiry-notice">
+                    ${isEn 
+                      ? 'This link will expire in 1 hour for your security.' 
+                      : 'Ce lien expirera dans 1 heure pour votre sécurité.'}
+                </p>
+                
+                <p style="font-size: 12px; margin-top: 30px; opacity: 0.6;">
+                    ${isEn 
+                      ? "If you didn't request this, you can safely ignore this email. Your password will remain unchanged." 
+                      : "Si vous n'êtes pas à l'origine de cette demande, vous pouvez ignorer cet e-mail en toute sécurité. Votre mot de passe restera inchangé."}
+                </p>
+            </div>
+            <div class="footer">
+                <p>&copy; ${new Date().getFullYear()} Vegan Delights Boutique & Restaurant.</p>
+                <p>Sustainable, ethical, and strictly delicious.</p>
+            </div>
+        </div>
+    </body>
+    </html>
+  `;
+
+  try {
+    await transporter.sendMail({
+      from: `"Vegan Delights Security" <${SENDER_EMAILS.verify}>`,
+      to: email,
+      subject,
+      html,
+    });
+    console.log(`Password Reset Email sent to ${email}`);
+  } catch (error) {
+    console.error('Failed to send password reset email:', error);
+  }
+}
