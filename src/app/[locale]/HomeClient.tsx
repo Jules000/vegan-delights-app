@@ -67,7 +67,7 @@ export default function HomeClient({
             </div>
           </div>
           <div 
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 px-6"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 px-6"
           >
             {trendingProducts.map((p) => (
               <ProductCard key={p.id} product={p} />
@@ -112,7 +112,7 @@ export default function HomeClient({
               <span className="material-symbols-outlined">shopping_bag</span>
             </Link>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {shopProducts.map((p) => (
               <div key={p.id} className="dark">
                 <ProductCard product={p} />

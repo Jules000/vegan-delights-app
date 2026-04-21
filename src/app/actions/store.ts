@@ -2,9 +2,31 @@
 
 import prisma from "@/lib/prisma";
 
-export async function getTrendingProducts(limit = 10) {
-  // Try to pick recent products for trending as fallback 
-  // You would build a more robust trending algorithm based on actual orders eventually
+export async function getTrendingProducts(limit = 6) {
+  // Try to find products that appear most in orders
+  const topSellers = await prisma.orderItem.groupBy({
+    by: ['productId'],
+    _sum: {
+      quantity: true
+    },
+    orderBy: {
+      _sum: {
+        quantity: 'desc'
+      }
+    },
+    take: limit
+  });
+
+  if (topSellers.length > 0) {
+    const productIds = topSellers.map(item => item.productId);
+    return await prisma.product.findMany({
+      where: {
+        id: { in: productIds }
+      }
+    });
+  }
+
+  // Fallback to most recent products if no sales data exists
   return await prisma.product.findMany({
     orderBy: { createdAt: "desc" },
     take: limit,

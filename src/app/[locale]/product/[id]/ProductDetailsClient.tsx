@@ -1,10 +1,9 @@
 "use client";
 
-import Link from 'next/link';
+import { Link, useRouter } from '@/i18n/routing';
 import { useState } from 'react';
 import { useCartStore } from '@/store/cartStore';
 import { useLocale } from 'next-intl';
-import { useRouter } from '@/i18n/routing';
 
 export default function ProductDetailsClient({ product }: { product: any }) {
   const [quantity, setQuantity] = useState(1);
@@ -45,7 +44,14 @@ export default function ProductDetailsClient({ product }: { product: any }) {
         <div className="flex items-center gap-2 mb-8 text-sm text-forest-green/50 dark:text-soft-cream/50">
           <Link href="/" className="hover:text-primary transition-colors">{locale === 'en' ? 'Home' : 'Accueil'}</Link>
           <span>/</span>
-          <Link href="/products" className="hover:text-primary transition-colors">{locale === 'en' ? 'Shop' : 'Boutique'}</Link>
+          <Link 
+            href={product.productType === 'RESTAURANT' ? '/restaurant' : '/shop'} 
+            className="hover:text-primary transition-colors"
+          >
+            {product.productType === 'RESTAURANT' 
+              ? (locale === 'en' ? 'Restaurant' : 'Restaurant') 
+              : (locale === 'en' ? 'Shop' : 'Boutique')}
+          </Link>
           <span>/</span>
           <span className="text-forest-green dark:text-soft-cream font-bold truncate max-w-[200px]">{name}</span>
         </div>
@@ -65,10 +71,10 @@ export default function ProductDetailsClient({ product }: { product: any }) {
               {name}
             </h1>
             <div className="flex items-end gap-3 mb-6">
-              <p className="text-3xl font-bold text-terracotta">{totalPrice.toFixed(2)} FCFA</p>
+              <p className="text-3xl font-bold text-terracotta">{totalPrice.toLocaleString(locale)} FCFA</p>
               {quantity > 1 && (
                 <p className="text-sm font-medium text-forest-green/40 dark:text-soft-cream/40 mb-1">
-                  ({price.toFixed(2)} FCFA / u)
+                  ({price.toLocaleString(locale)} FCFA / u)
                 </p>
               )}
             </div>

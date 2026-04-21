@@ -50,7 +50,7 @@ export default async function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
       </head>
       <body className="min-h-full flex flex-col font-display bg-[#fdfaf6] dark:bg-[#102210] text-[#0d1b0d] dark:text-[#fdfaf6]">
-        <NextIntlClientProvider messages={messages}>
+        <NextIntlClientProvider locale={locale} messages={messages}>
           <Navbar session={session} />
           <main className="flex-1">
             {children}

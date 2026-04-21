@@ -4,9 +4,9 @@ import HomeClient from './HomeClient';
 export default async function Home() {
   const [menuOfTheDay, trendingProducts, restaurantSneakPeek, shopSneakPeek] = await Promise.all([
     getMenuOfTheDay(),
-    getTrendingProducts(10),
+    getTrendingProducts(6),
     getAllStoreProducts({ type: 'RESTAURANT', limit: 4 }),
-    getAllStoreProducts({ type: 'SHOP', limit: 4 })
+    getAllStoreProducts({ type: 'SHOP', limit: 6 })
   ]);
 
   return (

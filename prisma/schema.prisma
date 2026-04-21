@@ -92,6 +92,9 @@ model Customer {
   email       String   @unique
   password    String?
   name        String
+  isVerified  Boolean  @default(false)
+  otp         String?
+  otpExpires  DateTime?
   totalSpent  Float    @default(0)
   orders      Order[]
   invoices    Invoice[]

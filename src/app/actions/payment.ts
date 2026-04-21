@@ -9,12 +9,31 @@ import { headers } from "next/headers";
 
 import prisma from "@/lib/prisma";
 
+const getTranzakConfig = () => {
+  const mode = process.env.TRANZAK_MODE === "live" ? "live" : "sandbox";
+  const isLive = mode === "live";
+  
+  const appId = isLive 
+    ? process.env.TRANZAK_LIVE_APP_ID 
+    : process.env.TRANZAK_SANDBOX_APP_ID;
+    
+  const appKey = isLive 
+    ? process.env.TRANZAK_LIVE_APP_KEY 
+    : process.env.TRANZAK_SANDBOX_APP_KEY;
+
+  if (!appId || !appKey) {
+    throw new Error(
+      `CRITICAL: Tranzak API credentials missing for mode [${mode}]. ` +
+      `Please check TRANZAK_${isLive ? 'LIVE' : 'SANDBOX'}_APP_ID and APP_KEY in your .env file.`
+    );
+  }
+
+  return { appId, appKey, mode };
+};
+
 export async function initializePayment(formData: FormData) {
-  const client = new TRANZAK({
-    appId: process.env.TRANZAK_APP_ID || "",
-    appKey: process.env.TRANZAK_APP_KEY || "",
-    mode: process.env.TRANZAK_MODE === "live" ? "live" : "sandbox",
-  });
+  const config = getTranzakConfig();
+  const client = new TRANZAK(config);
   
   const email = formData.get("email") as string;
   const firstName = formData.get("firstName") as string;
@@ -100,11 +119,8 @@ export async function initializePayment(formData: FormData) {
 }
 
 export async function verifyTransactionStatus(txRef: string) {
-  const client = new TRANZAK({
-    appId: process.env.TRANZAK_APP_ID || "",
-    appKey: process.env.TRANZAK_APP_KEY || "",
-    mode: process.env.TRANZAK_MODE === "live" ? "live" : "sandbox",
-  });
+  const config = getTranzakConfig();
+  const client = new TRANZAK(config);
 
   try {
     const transaction = await client.payment.collection.simple.find({ mchTransactionRef: txRef });

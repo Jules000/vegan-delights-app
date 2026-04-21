@@ -6,6 +6,7 @@ import { Link } from '@/i18n/routing';
 import { initializePayment } from '@/app/actions/payment';
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
+import CheckoutAuth from '@/components/auth/CheckoutAuth';
 
 export default function CheckoutClient({ session }: { session: any }) {
   const [mounted, setMounted] = useState(false);
@@ -72,8 +73,8 @@ export default function CheckoutClient({ session }: { session: any }) {
               </p>
               <p className="text-sm font-bold text-blue-800/60 italic">
                 {locale === 'en' 
-                  ? `Only ${(15000 - subtotal).toLocaleString()} FCFA left to get free shipping!` 
-                  : `Plus que ${(15000 - subtotal).toLocaleString()} FCFA pour bénéficier de la livraison gratuite !`}
+                  ? `Only ${(15000 - subtotal).toLocaleString(locale)} FCFA left to get free shipping!` 
+                  : `Plus que ${(15000 - subtotal).toLocaleString(locale)} FCFA pour bénéficier de la livraison gratuite !`}
               </p>
             </div>
           </div>
@@ -112,7 +113,7 @@ export default function CheckoutClient({ session }: { session: any }) {
                       </button>
                     </div>
                   </div>
-                  <p className="font-bold text-lg whitespace-nowrap">{(item.price * item.quantity).toFixed(2)} FCFA</p>
+                  <p className="font-bold text-lg whitespace-nowrap">{(item.price * item.quantity).toLocaleString(locale)} FCFA</p>
                 </div>
               ))}
             </div>
@@ -120,17 +121,17 @@ export default function CheckoutClient({ session }: { session: any }) {
             <div className="border-t border-forest-green/10 pt-6 space-y-3 mt-auto">
               <div className="flex justify-between text-forest-green/70">
                 <p>Sous-total</p>
-                <p className="font-medium">{subtotal.toFixed(2)} FCFA</p>
+                <p className="font-medium">{subtotal.toLocaleString(locale)} FCFA</p>
               </div>
               <div className="flex justify-between text-forest-green/70">
                 <p>Livraison (Eco-friendly)</p>
                 <p className={`font-black ${delivery === 0 ? 'text-primary' : ''}`}>
-                  {delivery === 0 ? (locale === 'en' ? 'FREE' : 'GRATUIT') : `${delivery.toFixed(2)} FCFA`}
+                  {delivery === 0 ? (locale === 'en' ? 'FREE' : 'GRATUIT') : `${delivery.toLocaleString(locale)} FCFA`}
                 </p>
               </div>
               <div className="flex justify-between font-black text-2xl mt-4 pt-4 border-t border-forest-green/10">
                 <p>Total</p>
-                <p className="text-primary">{total.toFixed(2)} FCFA</p>
+                <p className="text-primary">{total.toLocaleString(locale)} FCFA</p>
               </div>
             </div>
           </div>
@@ -141,21 +142,7 @@ export default function CheckoutClient({ session }: { session: any }) {
               <h2 className="font-bold text-2xl mb-2">Informations de livraison</h2>
               
               {!session ? (
-                <div className="bg-forest-green/5 border border-forest-green/10 rounded-2xl p-8 text-center">
-                  <span className="material-symbols-outlined text-5xl text-forest-green/30 mb-4 block">account_circle</span>
-                  <h3 className="font-bold text-xl mb-2">Connectez-vous pour continuer</h3>
-                  <p className="text-sm text-forest-green/60 mb-8">
-                    Afin de finaliser votre commande et assurer le suivi de livraison, une simple identification est requise.
-                  </p>
-                  <div className="flex flex-col gap-3">
-                    <Link href="/login?callbackUrl=/checkout" className="w-full bg-forest-green text-white font-bold py-4 rounded-xl hover:bg-forest-green/90 transition-all text-center">
-                      Se connecter
-                    </Link>
-                    <Link href="/register?callbackUrl=/checkout" className="w-full bg-white border border-forest-green/20 text-forest-green font-bold py-4 rounded-xl hover:bg-forest-green/5 transition-all text-center">
-                      Créer un compte
-                    </Link>
-                  </div>
-                </div>
+                <CheckoutAuth />
               ) : (
                 <form action={initializePayment} className="space-y-4">
                   <div className="bg-primary/10 p-4 rounded-xl border border-primary/20 mb-6 flex items-center justify-between">
@@ -182,7 +169,7 @@ export default function CheckoutClient({ session }: { session: any }) {
                   <input type="hidden" name="cartItems" value={JSON.stringify(items.map(item => ({ id: item.id, quantity: item.quantity, price: item.price })))} />
                   
                   <button className="w-full bg-primary text-forest-green font-bold text-lg py-5 rounded-full mt-6 shadow-xl hover:brightness-110 active:scale-95 transition-all flex justify-center items-center gap-2">
-                    <span className="material-symbols-outlined">lock</span> Payer {total.toFixed(2)} FCFA
+                    <span className="material-symbols-outlined">lock</span> Payer {total.toLocaleString(locale)} FCFA
                   </button>
                   <p className="text-center text-xs text-forest-green/40 mt-4 flex items-center justify-center gap-1">
                     <span className="material-symbols-outlined text-[10px]">encrypted</span> Paiement hautement sécurisé via Tranzak

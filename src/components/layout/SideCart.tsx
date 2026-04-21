@@ -78,8 +78,8 @@ export default function SideCart() {
                           {isFree 
                             ? (locale === 'en' ? 'Free shipping unlocked!' : 'Livraison offerte !') 
                             : (locale === 'en' 
-                                ? `${remaining.toLocaleString()} FCFA away from free shipping` 
-                                : `Plus que ${remaining.toLocaleString()} FCFA pour la livraison gratuite !`)}
+                                ? `${remaining.toLocaleString(locale)} FCFA away from free shipping` 
+                                : `Plus que ${remaining.toLocaleString(locale)} FCFA pour la livraison gratuite !`)}
                         </span>
                         <span className="text-primary">{Math.round(progress)}%</span>
                       </div>
@@ -142,7 +142,7 @@ export default function SideCart() {
                       <h3 className="font-semibold text-forest-green dark:text-soft-cream truncate">
                         {locale === 'en' ? item.nameEn : item.nameFr}
                       </h3>
-                      <p className="text-terracotta font-bold">{(item.price * item.quantity).toLocaleString()} FCFA</p>
+                      <p className="text-terracotta font-bold">{(item.price * item.quantity).toLocaleString(locale)} FCFA</p>
                       
                       <div className="flex items-center gap-3 mt-2">
                         <div className="flex items-center bg-forest-green/5 dark:bg-soft-cream/5 rounded-full h-8 border border-forest-green/10 dark:border-soft-cream/10">
@@ -182,7 +182,7 @@ export default function SideCart() {
                   <span className="text-lg font-medium text-forest-green dark:text-soft-cream">
                     {locale === 'en' ? 'Subtotal' : 'Sous-total'}
                   </span>
-                  <span className="text-3xl font-black text-terracotta">{getTotalPrice().toLocaleString()} FCFA</span>
+                  <span className="text-3xl font-black text-terracotta">{getTotalPrice().toLocaleString(locale)} FCFA</span>
                 </div>
                 <Link href="/checkout" onClick={closeCart} className="block w-full">
                   <button className="relative overflow-hidden w-full py-4 bg-terracotta text-white font-bold text-lg rounded-full hover:bg-terracotta/90 transition-all shadow-lg hover:shadow-xl active:scale-95 flex items-center justify-center gap-2 group">

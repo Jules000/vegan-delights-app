@@ -38,29 +38,33 @@ export default function ProductCard({ product }: { product: any }) {
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-50px" }}
-      className="flex-none w-64 group cursor-pointer"
+      className="group cursor-pointer w-full"
     >
       <Link href={`/product/${slug}`} className="block">
-        <div className="relative aspect-[4/5] rounded-2xl overflow-hidden mb-4 bg-soft-cream shadow-sm">
+        <div className="relative aspect-[4/5] rounded-3xl overflow-hidden mb-5 bg-soft-cream shadow-md transition-shadow hover:shadow-xl">
           <div 
-            className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110" 
+            className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 group-hover:scale-110" 
             style={{ backgroundImage: `url('${product.image}')` }}
           />
-          <div className="absolute top-4 left-4 flex flex-col gap-2 z-10">
+          
+          {/* Gradients for depth */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-60" />
+
+          <div className="absolute top-5 left-5 flex flex-col gap-2 z-10">
             {product.category && (
-              <div className="bg-white/90 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider text-terracotta shadow-sm">
+              <div className="bg-white/95 backdrop-blur-md px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.15em] text-terracotta shadow-sm">
                 {product.category}
               </div>
             )}
             {product.isGlutenFree && (
-              <div className="bg-primary/95 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider text-forest-green shadow-sm flex items-center gap-1">
-                <span className="material-symbols-outlined text-[12px]">eco</span>
+              <div className="bg-primary/95 backdrop-blur-md px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.15em] text-forest-green shadow-sm flex items-center gap-1.5">
+                <span className="material-symbols-outlined text-[14px]">eco</span>
                 {locale === 'en' ? 'Gluten Free' : 'Sans Gluten'}
               </div>
             )}
           </div>
 
-          {/* Floating Quick Add Button */}
+          {/* Floating Action Button (Only visible on hover or mobile always?) */}
           <button
             onClick={(e) => {
               e.preventDefault();
@@ -80,81 +84,39 @@ export default function ProductCard({ product }: { product: any }) {
               }, 500);
             }}
             disabled={isAdding || isSuccess}
-            className={`absolute bottom-4 right-4 z-20 size-12 rounded-full flex items-center justify-center shadow-xl transition-all active:scale-90 ${
+            className={`absolute bottom-5 right-5 z-30 size-12 md:size-14 rounded-2xl flex items-center justify-center shadow-2xl transition-all active:scale-90 ${
               isSuccess 
                 ? 'bg-white text-forest-green' 
-                : 'bg-primary text-forest-green hover:scale-110 hover:brightness-110'
-            } disabled:opacity-80`}
-            title={locale === 'en' ? 'Add to cart' : 'Ajouter au panier'}
+                : 'bg-primary text-forest-green hover:scale-105 active:brightness-90'
+            } disabled:opacity-80 opacity-100 md:opacity-0 md:translate-y-4 md:group-hover:opacity-100 md:group-hover:translate-y-0`}
           >
             {isAdding ? (
               <span className="material-symbols-outlined animate-spin text-2xl">refresh</span>
             ) : isSuccess ? (
               <span className="material-symbols-outlined text-2xl">check</span>
             ) : (
-              <span className="material-symbols-outlined text-2xl font-bold">add</span>
+              <span className="material-symbols-outlined text-2xl font-black">shopping_cart_checkout</span>
             )}
           </button>
           
-          {/* Interactive Hover Overlay */}
-          <div className="nutritional-overlay absolute inset-0 bg-forest-green/80 backdrop-blur-sm p-6 flex flex-col justify-end text-white">
-            <h4 className="font-bold mb-4 flex items-center gap-2 text-primary">
-              <span className="material-symbols-outlined">analytics</span> {locale === 'en' ? 'Nutrition' : 'Valeurs Nutritionnelles'}
-            </h4>
-            <div className="grid grid-cols-2 gap-4 text-xs">
-              <div className="border-l-2 border-primary pl-2">
-                <p className="text-white/60 truncate">{locale === 'en' ? product.nutritionLabel1En : product.nutritionLabel1Fr}</p>
-                <p className="font-bold truncate">{product.nutritionValue1}</p>
-              </div>
-              <div className="border-l-2 border-primary pl-2">
-                <p className="text-white/60 truncate">{locale === 'en' ? product.nutritionLabel2En : product.nutritionLabel2Fr}</p>
-                <p className="font-bold truncate">{product.nutritionValue2}</p>
-              </div>
-              <div className="border-l-2 border-primary pl-2">
-                <p className="text-white/60 truncate">{locale === 'en' ? product.nutritionLabel3En : product.nutritionLabel3Fr}</p>
-                <p className="font-bold truncate">{product.nutritionValue3}</p>
-              </div>
-              <div className="border-l-2 border-primary pl-2">
-                <p className="text-white/60 truncate">{locale === 'en' ? product.nutritionLabel4En : product.nutritionLabel4Fr}</p>
-                <p className="font-bold truncate">{product.nutritionValue4}</p>
-              </div>
+          {/* Description Overlay on Hover */}
+          <div className="absolute inset-0 bg-forest-green/60 backdrop-blur-[2px] p-8 flex flex-col justify-end text-white opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-y-4 group-hover:translate-y-0 pointer-events-none">
+            <div className="mb-8">
+              <span className="text-primary text-[10px] font-black uppercase tracking-[0.2em] mb-2 block">Discovery</span>
+              <p className="text-sm font-medium leading-relaxed line-clamp-4 text-white/90">
+                {locale === 'en' ? product.descEn : product.descFr}
+              </p>
             </div>
-            
-            <button 
-              disabled={isAdding || isSuccess}
-              className={`mt-6 w-full py-3 rounded-lg font-bold text-sm transition-all active:scale-95 shadow-xl disabled:opacity-90 flex items-center justify-center gap-2 ${isSuccess ? 'bg-white text-forest-green' : 'bg-primary text-forest-green hover:brightness-110'}`}
-              onClick={(e) => {
-                e.preventDefault(); // Stop link navigation
-                setIsAdding(true);
-                addToCart({
-                  id: product.id,
-                  nameFr: product.nameFr,
-                  nameEn: product.nameEn,
-                  price: product.price,
-                  image: product.image
-                });
-                setTimeout(() => {
-                  setIsAdding(false);
-                  setIsSuccess(true);
-                  setTimeout(() => setIsSuccess(false), 2000);
-                }, 500);
-              }}
-            >
-              {isAdding ? <span className="material-symbols-outlined animate-spin text-sm">refresh</span> : null}
-              {isSuccess && !isAdding ? <span className="material-symbols-outlined text-sm">check</span> : null}
-              {isAdding ? (locale === 'en' ? 'Adding...' : 'Ajout...') : 
-               isSuccess ? (locale === 'en' ? 'Added!' : 'Ajouté !') : 
-               (locale === 'en' ? 'Quick Add' : 'Ajout Rapide')}
-            </button>
           </div>
         </div>
         
-        <h4 className="font-bold text-xl mb-1 group-hover:text-primary transition-colors">{name}</h4>
+        <h4 className="font-serif text-2xl font-black mb-1.5 text-forest-green dark:text-soft-cream group-hover:text-terracotta transition-colors">{name}</h4>
         <div className="flex items-center justify-between">
-          <span className="text-forest-green/60 dark:text-soft-cream/60 text-sm italic opacity-0">...</span>
-          <span className="text-terracotta font-bold">{price.toFixed(2)} FCFA</span>
+          <span className="text-terracotta font-black text-lg tracking-tight">{price.toLocaleString(locale)} FCFA</span>
+          <span className="material-symbols-outlined text-forest-green/20 group-hover:text-terracotta/40 transition-colors">arrow_forward</span>
         </div>
       </Link>
     </motion.div>
+
   );
 }

@@ -25,15 +25,6 @@
 }
 
 @layer utilities {
-  .product-card:hover .nutritional-overlay {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  .nutritional-overlay {
-    opacity: 0;
-    transform: translateY(10px);
-    transition: all 0.3s ease-in-out;
-  }
   .no-scrollbar::-webkit-scrollbar {
     display: none;
   }

@@ -8,11 +8,14 @@ import { redirect } from "next/navigation";
 
 import prisma from "@/lib/prisma";
 
+import { sendOtpEmail } from "@/lib/email";
+
 export async function registerUser(prevState: any, formData: FormData) {
   const firstName = formData.get("firstName") as string;
   const lastName = formData.get("lastName") as string;
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
+  const locale = formData.get("locale") as string || "fr";
 
   if (!email || !password || !firstName || !lastName) {
     return { error: "Tous les champs sont obligatoires." };
@@ -21,54 +24,100 @@ export async function registerUser(prevState: any, formData: FormData) {
   // Check if user exists
   const existingUser = await prisma.customer.findUnique({ where: { email } });
 
-  if (existingUser) {
-    // If user exists as a guest without password, update them
-    if (!existingUser.password) {
-      const hashedPassword = await bcrypt.hash(password, 10);
-      const user = await prisma.customer.update({
-        where: { email },
-        data: {
-          password: hashedPassword,
-          name: `${firstName} ${lastName}`
-        }
-      });
-      const locale = formData.get("locale") as string || "fr";
-      const rawCallbackUrl = formData.get("callbackUrl") as string;
-      const cleanPath = (rawCallbackUrl && rawCallbackUrl !== 'undefined' && rawCallbackUrl.startsWith('/')) ? rawCallbackUrl : "/";
-      
-      await setSession(user.id, user.email, user.name);
-
-      if (cleanPath.startsWith("/admin")) {
-        redirect(cleanPath);
-      } else {
-        redirect(`/${locale}${cleanPath}`);
-      }
-    } else {
-      return { error: "Un compte avec cette adresse email existe déjà." };
-    }
+  if (existingUser && existingUser.password) {
+    return { error: "Un compte avec cette adresse email existe déjà." };
   }
 
-  // Create new user
   const hashedPassword = await bcrypt.hash(password, 10);
-  const user = await prisma.customer.create({
-    data: {
-      email,
-      password: hashedPassword,
-      name: `${firstName} ${lastName}`,
-    },
-  });
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  const otpExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
 
+  if (existingUser && !existingUser.password) {
+    // If user exists as a guest without password, update them
+    await prisma.customer.update({
+      where: { email },
+      data: {
+        password: hashedPassword,
+        name: `${firstName} ${lastName}`,
+        otp,
+        otpExpires,
+        isVerified: false
+      }
+    });
+  } else {
+    // Create new user
+    await prisma.customer.create({
+      data: {
+        email,
+        password: hashedPassword,
+        name: `${firstName} ${lastName}`,
+        otp,
+        otpExpires,
+        isVerified: false
+      },
+    });
+  }
+
+  // Send OTP Email
+  await sendOtpEmail(email, `${firstName} ${lastName}`, otp, locale);
+
+  return { success: true, email, showOtp: true };
+}
+
+export async function verifyOtp(prevState: any, formData: FormData) {
+  const email = formData.get("email") as string;
+  const otp = formData.get("otp") as string;
   const locale = formData.get("locale") as string || "fr";
   const rawCallbackUrl = formData.get("callbackUrl") as string;
   const cleanPath = (rawCallbackUrl && rawCallbackUrl !== 'undefined' && rawCallbackUrl.startsWith('/')) ? rawCallbackUrl : "/";
-  
-  await setSession(user.id, user.email, user.name);
+
+  if (!email || !otp) {
+    return { error: "Veuillez entrer le code de vérification." };
+  }
+
+  const user = await prisma.customer.findUnique({ where: { email } });
+
+  if (!user || user.otp !== otp) {
+    return { error: "Code de vérification incorrect." };
+  }
+
+  if (user.otpExpires && user.otpExpires < new Date()) {
+    return { error: "Ce code a expiré. Veuillez en demander un nouveau." };
+  }
+
+  // Mark as verified and clear OTP
+  const updatedUser = await prisma.customer.update({
+    where: { email },
+    data: {
+      isVerified: true,
+      otp: null,
+      otpExpires: null
+    }
+  });
+
+  await setSession(updatedUser.id, updatedUser.email, updatedUser.name);
 
   if (cleanPath.startsWith("/admin")) {
     redirect(cleanPath);
   } else {
     redirect(`/${locale}${cleanPath}`);
   }
+}
+
+export async function resendOtp(email: string, locale: string) {
+  const user = await prisma.customer.findUnique({ where: { email } });
+  if (!user) return { error: "Utilisateur introuvable." };
+
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  const otpExpires = new Date(Date.now() + 15 * 60 * 1000);
+
+  await prisma.customer.update({
+    where: { email },
+    data: { otp, otpExpires }
+  });
+
+  await sendOtpEmail(email, user.name, otp, locale);
+  return { success: true };
 }
 
 export async function loginUser(prevState: any, formData: FormData) {
@@ -82,6 +131,22 @@ export async function loginUser(prevState: any, formData: FormData) {
   const user = await prisma.customer.findUnique({ where: { email } });
   if (!user || !user.password) {
     return { error: "Identifiants incorrects." };
+  }
+
+  if (!user.isVerified) {
+    // If not verified, trigger a new OTP and return a state that allows UI to handle verification
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpExpires = new Date(Date.now() + 15 * 60 * 1000);
+    const locale = formData.get("locale") as string || "fr";
+    
+    await prisma.customer.update({
+      where: { email },
+      data: { otp, otpExpires }
+    });
+    
+    await sendOtpEmail(email, user.name, otp, locale);
+    
+    return { error: "Veuillez vérifier votre compte. Un code a été envoyé.", showOtp: true, email };
   }
 
   const isPasswordValid = await bcrypt.compare(password, user.password);
