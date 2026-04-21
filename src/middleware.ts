@@ -5,7 +5,7 @@ import { decrypt } from '@/lib/auth';
 
 const intlMiddleware = createMiddleware(routing);
 
-export default async function middleware(request: any) {
+export async function middleware(request: any) {
   const { pathname } = request.nextUrl;
 
   // 1. Critical Fix for Next.js 16: Bypass proxy for Server Actions
@@ -20,10 +20,10 @@ export default async function middleware(request: any) {
   // 2. Security Layer: Protect /admin routes
   const segments = pathname.split('/');
   const locale = ['fr', 'en'].includes(segments[1]) ? segments[1] : 'fr';
-  
+
   const isVerifyPage = pathname.match(/^\/(?:fr|en)?\/admin\/verify/);
   const isAdminRoute = (pathname.match(/^\/(?:fr|en)?\/admin/) || pathname.startsWith('/admin')) && !isVerifyPage;
-  
+
   if (isAdminRoute) {
     const session = request.cookies.get('session')?.value;
     const payload = session ? await decrypt(session) : null;
@@ -43,13 +43,13 @@ export default async function middleware(request: any) {
       return NextResponse.redirect(verifyUrl);
     }
   }
-  
+
   // 3. Delegation to Localization
   const response = intlMiddleware(request);
-  
+
   // Pass our custom headers into the response so layout.tsx can see them
   response.headers.set('x-pathname', pathname);
-  
+
   return response;
 }
 
