@@ -16,13 +16,17 @@ interface Subcategory {
   order: number;
 }
 
+interface SubcategoryData {
+  products: any[];
+  page: number;
+  hasMore: boolean;
+  isLoadingMore: boolean;
+}
+
 interface ProductListingProps {
   type: 'RESTAURANT' | 'SHOP';
   initialData: {
-    products: any[];
-    totalPages: number;
-    currentPage: number;
-    totalCount: number;
+    productsBySub?: Record<string, SubcategoryData>;
   };
   subcategories: Subcategory[];
 }
@@ -32,13 +36,6 @@ const CATEGORIES = [
   { id: 'VEGAN', fr: 'Vegan', en: 'Vegan' },
   { id: 'VEGETARIAN', fr: 'Végétarien', en: 'Vegetarian' },
 ];
-
-interface SubcategoryData {
-  products: any[];
-  page: number;
-  hasMore: boolean;
-  isLoadingMore: boolean;
-}
 
 export default function ProductListing({ type, initialData, subcategories }: ProductListingProps) {
   const locale = useLocale();
