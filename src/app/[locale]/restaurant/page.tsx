@@ -10,7 +10,7 @@ export default async function RestaurantPage() {
   
   // Fetch first 6 products for each subcategory
   const productsBySub = await Promise.all(
-    subcategories.map(async (sub) => {
+    subcategories.map(async (sub: any) => {
       const result = await getAllStoreProducts({
         type: 'RESTAURANT',
         subcategory: sub.id,

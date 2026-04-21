@@ -8,7 +8,7 @@ export default async function ShopPage() {
   
   // Fetch first 6 products for each subcategory to provide meaningful initial data
   const productsBySub = await Promise.all(
-    subcategories.map(async (sub) => {
+    subcategories.map(async (sub: any) => {
       const result = await getAllStoreProducts({
         type: 'SHOP',
         subcategory: sub.id,
