@@ -19,7 +19,7 @@ export default async function ShopPage() {
   );
 
   const initialData = {
-    productsBySub: productsBySub.reduce((acc: any, curr) => {
+    productsBySub: productsBySub.reduce((acc: any, curr: any) => {
       if (curr.products.length > 0) {
         acc[curr.subId] = {
           products: curr.products,
