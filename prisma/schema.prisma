@@ -90,6 +90,7 @@ model OrderItem {
 model Customer {
   id          String   @id @default(cuid())
   email       String   @unique
+  phone       String?  @unique
   password    String?
   name        String
   isVerified  Boolean  @default(false)

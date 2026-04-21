@@ -8,6 +8,8 @@ import { useLocale } from 'next-intl';
 import { motion, AnimatePresence } from 'framer-motion';
 import OtpVerification from '@/components/auth/OtpVerification';
 import PasswordStrengthMeter from '@/components/auth/PasswordStrengthMeter';
+import PhoneInput from 'react-phone-number-input';
+import 'react-phone-number-input/style.css';
 
 const initialState = { error: '', showOtp: false, email: '' };
 
@@ -17,6 +19,7 @@ export default function RegisterPage() {
   const rawCallbackUrl = searchParams.get('callbackUrl');
   const callbackUrl = (rawCallbackUrl && rawCallbackUrl !== 'undefined' && rawCallbackUrl !== 'null') ? rawCallbackUrl : '/';
 
+  const [phoneNumber, setPhoneNumber] = useState<any>('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -34,6 +37,12 @@ export default function RegisterPage() {
 
   const handleRegisterSubmit = (formData: FormData) => {
     setClientError('');
+    
+    if (!phoneNumber) {
+      setClientError(locale === 'en' ? 'Phone number is required' : 'Le numéro de téléphone est requis');
+      return;
+    }
+
     const pass = formData.get('password') as string;
     const confirm = formData.get('confirmPassword') as string;
 
@@ -83,6 +92,7 @@ export default function RegisterPage() {
               <form action={handleRegisterSubmit} className="space-y-4 flex flex-col items-center">
                 <input type="hidden" name="callbackUrl" value={callbackUrl || ''} />
                 <input type="hidden" name="locale" value={locale} />
+                <input type="hidden" name="phone" value={phoneNumber} />
                 
                 {(state?.error || clientError) && (
                   <div className="w-full bg-red-100 text-red-600 p-3 rounded-lg text-sm text-center font-bold border border-red-200">
@@ -131,6 +141,22 @@ export default function RegisterPage() {
                     type="email" 
                     required 
                   />
+                </div>
+
+                <div className="w-full space-y-1">
+                  <label htmlFor="phone" className="text-sm font-bold text-forest-green dark:text-soft-cream ml-2">
+                    {locale === 'en' ? 'Phone Number' : 'Numéro de Téléphone'}
+                  </label>
+                  <div className="phone-input-container">
+                    <PhoneInput
+                      international
+                      defaultCountry="CM"
+                      value={phoneNumber}
+                      onChange={setPhoneNumber}
+                      placeholder={locale === 'en' ? 'Enter phone number' : 'Entrez le numéro'}
+                      className="w-full"
+                    />
+                  </div>
                 </div>
 
                 <div className="w-full space-y-1">

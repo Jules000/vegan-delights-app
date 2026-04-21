@@ -11,11 +11,15 @@ import prisma from "@/lib/prisma";
 import { sendOtpEmail } from "@/lib/email";
 
 import { z } from "zod";
+import { isValidPhoneNumber } from "libphonenumber-js";
 
 const registerSchema = z.object({
   firstName: z.string().min(2, "Le prénom doit avoir au moins 2 caractères"),
   lastName: z.string().min(2, "Le nom doit avoir au moins 2 caractères"),
   email: z.string().email("Format d'email invalide"),
+  phone: z.string().refine((val) => isValidPhoneNumber(val), {
+    message: "Numéro de téléphone invalide"
+  }),
   password: z.string()
     .min(8, "Le mot de passe doit faire au moins 8 caractères")
     .regex(/[A-Z]/, "Le mot de passe doit contenir au moins une majuscule")
@@ -32,6 +36,7 @@ export async function registerUser(prevState: any, formData: FormData) {
   const firstName = formData.get("firstName") as string;
   const lastName = formData.get("lastName") as string;
   const email = formData.get("email") as string;
+  const phone = formData.get("phone") as string;
   const password = formData.get("password") as string;
   const confirmPassword = formData.get("confirmPassword") as string;
   const locale = formData.get("locale") as string || "fr";
@@ -41,6 +46,7 @@ export async function registerUser(prevState: any, formData: FormData) {
     firstName, 
     lastName, 
     email, 
+    phone,
     password, 
     confirmPassword 
   });
@@ -50,23 +56,29 @@ export async function registerUser(prevState: any, formData: FormData) {
     return { error: validation.error.errors[0].message };
   }
 
-  // Check if user exists
-  const existingUser = await prisma.customer.findUnique({ where: { email } });
-
-  if (existingUser && existingUser.password) {
+  // Check if user exists by email
+  const existingByEmail = await prisma.customer.findUnique({ where: { email } });
+  if (existingByEmail && existingByEmail.password) {
     return { error: "Un compte avec cette adresse email existe déjà." };
+  }
+
+  // Check if user exists by phone
+  const existingByPhone = await prisma.customer.findUnique({ where: { phone } });
+  if (existingByPhone) {
+    return { error: "Ce numéro de téléphone est déjà utilisé." };
   }
 
   const hashedPassword = await bcrypt.hash(password, 10);
   const otp = Math.floor(100000 + Math.random() * 900000).toString();
   const otpExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
 
-  if (existingUser && !existingUser.password) {
+  if (existingByEmail && !existingByEmail.password) {
     // If user exists as a guest without password, update them
     await prisma.customer.update({
       where: { email },
       data: {
         password: hashedPassword,
+        phone,
         name: `${firstName} ${lastName}`,
         otp,
         otpExpires,
@@ -78,6 +90,7 @@ export async function registerUser(prevState: any, formData: FormData) {
     await prisma.customer.create({
       data: {
         email,
+        phone,
         password: hashedPassword,
         name: `${firstName} ${lastName}`,
         otp,

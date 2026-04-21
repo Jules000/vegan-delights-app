@@ -6,12 +6,15 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useLocale, useTranslations } from 'next-intl';
 import OtpVerification from './OtpVerification';
 import PasswordStrengthMeter from './PasswordStrengthMeter';
+import PhoneInput from 'react-phone-number-input';
+import 'react-phone-number-input/style.css';
 
 export default function CheckoutAuth() {
   const t = useTranslations('Index');
   const locale = useLocale();
   const [mode, setMode] = useState<'login' | 'register'>('login');
   const [showPassword, setShowPassword] = useState(false);
+  const [phoneNumber, setPhoneNumber] = useState<any>('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [clientError, setClientError] = useState('');
@@ -30,6 +33,12 @@ export default function CheckoutAuth() {
 
   const handleRegisterSubmit = (formData: FormData) => {
     setClientError('');
+
+    if (!phoneNumber) {
+      setClientError(locale === 'en' ? 'Phone number is required' : 'Le numéro de téléphone est requis');
+      return;
+    }
+
     const pass = formData.get('password') as string;
     const confirm = formData.get('confirmPassword') as string;
 
@@ -145,6 +154,7 @@ export default function CheckoutAuth() {
             </h3>
             <input type="hidden" name="locale" value={locale} />
             <input type="hidden" name="callbackUrl" value="/checkout" />
+            <input type="hidden" name="phone" value={phoneNumber} />
             
             <div className="grid grid-cols-2 gap-4">
               <input 
@@ -162,13 +172,29 @@ export default function CheckoutAuth() {
                 required 
               />
             </div>
-            <input 
-              name="email" 
-              className="w-full bg-white dark:bg-black/20 border border-forest-green/20 rounded-xl p-4 outline-none focus:ring-2 focus:ring-primary" 
-              placeholder="Email" 
-              type="email" 
-              required 
-            />
+
+            <div className="space-y-1">
+              <input 
+                name="email" 
+                className="w-full bg-white dark:bg-black/20 border border-forest-green/20 rounded-xl p-4 outline-none focus:ring-2 focus:ring-primary" 
+                placeholder="Email" 
+                type="email" 
+                required 
+              />
+            </div>
+
+            <div className="space-y-1">
+              <div className="phone-input-container">
+                <PhoneInput
+                  international
+                  defaultCountry="CM"
+                  value={phoneNumber}
+                  onChange={setPhoneNumber}
+                  placeholder={locale === 'en' ? 'Enter phone number' : 'Entrez le numéro'}
+                  className="w-full"
+                />
+              </div>
+            </div>
             
             <div className="space-y-1 relative">
               <input 
