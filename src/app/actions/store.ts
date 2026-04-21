@@ -87,12 +87,14 @@ export async function getStoreProductById(id: string) {
   });
 }
 
+import { slugify } from "@/lib/slugify";
+
 export async function getStoreProductBySlug(slug: string) {
   const products = await prisma.product.findMany();
   return products.find(p => {
-    const slugEn = p.nameEn ? p.nameEn.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') : '';
-    const slugFr = p.nameFr ? p.nameFr.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') : '';
-    return slugEn === slug || slugFr === slug;
+    const slugEn = slugify(p.nameEn || '');
+    const slugFr = slugify(p.nameFr || '');
+    return slugEn === slug || slugFr === slug || p.id === slug;
   }) || null;
 }
 

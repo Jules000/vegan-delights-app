@@ -8,6 +8,7 @@ import { useEffect, useState, useRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import SideCart from './SideCart';
 import { searchProducts } from '@/app/actions/store';
+import { slugify } from '@/lib/slugify';
 
 function CartBadge() {
   const [mounted, setMounted] = useState(false);
@@ -115,7 +116,7 @@ export default function Navbar({ session }: { session: any }) {
             {searchResults.map((product) => (
               <div key={product.id} className="flex items-center gap-3 p-2 hover:bg-forest-green/5 dark:hover:bg-soft-cream/5 rounded-xl transition-colors group">
                 <Link 
-                  href={`/product/${product.id}`} 
+                  href={`/product/${slugify(locale === 'en' ? product.nameEn : product.nameFr)}`} 
                   onClick={() => {
                     setShowResults(false);
                     setIsMenuOpen(false);

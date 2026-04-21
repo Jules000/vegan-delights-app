@@ -5,6 +5,7 @@ import { Link, useRouter } from '@/i18n/routing';
 import { useCartStore } from '@/store/cartStore';
 import { useLocale } from 'next-intl';
 import { useState } from 'react';
+import { slugify } from '@/lib/slugify';
 
 export interface Product {
   id: string;
@@ -31,7 +32,7 @@ export default function ProductCard({ product }: { product: any }) {
   // If price is missing or bad, default it
   const price = product.price || 0;
   
-  const slug = name ? name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') : 'product';
+  const slug = slugify(name);
   
   return (
     <motion.div 
