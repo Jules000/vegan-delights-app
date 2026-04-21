@@ -1,3 +1,5 @@
+'use client';
+
 import { Link, usePathname, useRouter } from '@/i18n/routing';
 import { useLocale, useTranslations } from 'next-intl';
 import { logoutUser } from '@/app/actions/auth';
@@ -36,7 +38,7 @@ export default function Navbar({ session }: { session: any }) {
   const locale = useLocale();
   const router = useRouter();
   const pathname = usePathname();
-  const { openCart, addItem } = useCartStore();
+  const { openCart, addToCart } = useCartStore();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUserMenuHovered, setIsUserMenuHovered] = useState(false);
   
@@ -46,6 +48,7 @@ export default function Navbar({ session }: { session: any }) {
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [showResults, setShowResults] = useState(false);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
   const mobileSearchRef = useRef<HTMLDivElement>(null);
 
@@ -78,11 +81,12 @@ export default function Navbar({ session }: { session: any }) {
     return () => clearTimeout(timer);
   }, [searchQuery, searchType]);
 
-  // Close results when clicking outside
+  // Close results and filter when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
         setShowResults(false);
+        setIsFilterOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -126,18 +130,14 @@ export default function Navbar({ session }: { session: any }) {
                   </div>
                 </Link>
                 <button 
-                  onClick={() => {
-                    addItem({
-                      id: product.id,
-                      name: locale === 'en' ? product.nameEn : product.nameFr,
-                      price: product.price,
-                      image: product.image,
-                      quantity: 1
-                    });
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    addToCart(product);
                   }}
-                  className="size-8 bg-primary/10 text-primary hover:bg-primary hover:text-white rounded-full flex items-center justify-center transition-all active:scale-90"
+                  className="size-10 shrink-0 bg-primary/10 text-primary hover:bg-primary hover:text-white rounded-full flex items-center justify-center transition-all active:scale-90"
                 >
-                  <span className="material-symbols-outlined text-lg">add</span>
+                  <span className="material-symbols-outlined text-xl">shopping_bag</span>
                 </button>
               </div>
             ))}
@@ -178,19 +178,40 @@ export default function Navbar({ session }: { session: any }) {
             {/* Desktop Search Bar */}
             <div className="relative hidden lg:block" ref={searchRef}>
               <div className="flex items-center bg-forest-green/5 dark:bg-soft-cream/5 rounded-full border border-transparent focus-within:border-primary/30 transition-all">
-                <div className="flex p-1">
+                <div className="relative p-1">
                    <button 
-                    onClick={() => setSearchType('RESTAURANT')}
-                    className={`px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-full transition-all ${searchType === 'RESTAURANT' ? 'bg-primary text-forest-green shadow-sm' : 'text-forest-green/40 dark:text-soft-cream/40'}`}
+                    onClick={() => setIsFilterOpen(!isFilterOpen)}
+                    className="flex items-center gap-2 px-4 py-2 bg-primary text-forest-green rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm hover:brightness-105 transition-all"
                   >
-                    Res.
+                    <span>{searchType === 'RESTAURANT' ? 'Restaurant' : 'Boutique'}</span>
+                    <span className={`material-symbols-outlined text-sm transition-transform duration-300 ${isFilterOpen ? 'rotate-180' : ''}`}>expand_more</span>
                   </button>
-                  <button 
-                    onClick={() => setSearchType('SHOP')}
-                    className={`px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-full transition-all ${searchType === 'SHOP' ? 'bg-primary text-forest-green shadow-sm' : 'text-forest-green/40 dark:text-soft-cream/40'}`}
-                  >
-                    Shop
-                  </button>
+                  
+                  <AnimatePresence>
+                    {isFilterOpen && (
+                      <motion.div 
+                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                        className="absolute top-full left-0 mt-2 w-40 z-[70] bg-white dark:bg-background-dark border border-forest-green/10 dark:border-soft-cream/10 rounded-2xl shadow-2xl overflow-hidden py-2"
+                      >
+                        <button 
+                          onClick={() => { setSearchType('RESTAURANT'); setIsFilterOpen(false); }}
+                          className={`w-full flex items-center justify-between px-4 py-2 text-[10px] font-black uppercase tracking-widest hover:bg-forest-green/5 dark:hover:bg-soft-cream/5 transition-all ${searchType === 'RESTAURANT' ? 'text-primary' : 'text-forest-green/60'}`}
+                        >
+                          Restaurant
+                          {searchType === 'RESTAURANT' && <span className="material-symbols-outlined text-sm">check</span>}
+                        </button>
+                        <button 
+                          onClick={() => { setSearchType('SHOP'); setIsFilterOpen(false); }}
+                          className={`w-full flex items-center justify-between px-4 py-2 text-[10px] font-black uppercase tracking-widest hover:bg-forest-green/5 dark:hover:bg-soft-cream/5 transition-all ${searchType === 'SHOP' ? 'text-primary' : 'text-forest-green/60'}`}
+                        >
+                          Boutique
+                          {searchType === 'SHOP' && <span className="material-symbols-outlined text-sm">check</span>}
+                        </button>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
                 <div className="relative flex-1 flex items-center">
                   <span className="material-symbols-outlined absolute left-2 text-forest-green/40 dark:text-soft-cream/40 text-xl">
@@ -200,8 +221,8 @@ export default function Navbar({ session }: { session: any }) {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onFocus={() => searchQuery.length >= 2 && setShowResults(true)}
-                    className="bg-transparent border-none pl-9 pr-4 py-2 text-sm w-48 xl:w-64 outline-none" 
-                    placeholder={searchType === 'RESTAURANT' ? 'Rechercher un plat...' : 'Rechercher un produit...'} 
+                    className="bg-transparent border-none pl-9 pr-4 py-2 text-sm w-32 xl:w-48 outline-none" 
+                    placeholder={searchType === 'RESTAURANT' ? 'Rechercher...' : 'Boutique...'} 
                     type="text"
                   />
                 </div>
@@ -288,21 +309,42 @@ export default function Navbar({ session }: { session: any }) {
         className="fixed inset-0 z-[55] bg-white dark:bg-background-dark pt-24 px-10 flex flex-col pointer-events-auto lg:hidden overflow-y-auto custom-scrollbar"
       >
         <div className="flex flex-col gap-8 pb-10">
-          {/* Prominent Mobile Search */}
+          {/* Prominent Mobile Search Dropdown */}
           <div className="relative mt-4 flex flex-col gap-4" ref={mobileSearchRef}>
-            <div className="flex p-1 bg-forest-green/5 dark:bg-soft-cream/5 rounded-2xl self-start">
-                <button 
-                onClick={() => setSearchType('RESTAURANT')}
-                className={`px-4 py-2 text-xs font-black uppercase tracking-widest rounded-xl transition-all ${searchType === 'RESTAURANT' ? 'bg-primary text-forest-green shadow-md' : 'text-forest-green/40 dark:text-soft-cream/40'}`}
-              >
-                Restaurant
-              </button>
+            <div className="relative">
               <button 
-                onClick={() => setSearchType('SHOP')}
-                className={`px-4 py-2 text-xs font-black uppercase tracking-widest rounded-xl transition-all ${searchType === 'SHOP' ? 'bg-primary text-forest-green shadow-md' : 'text-forest-green/40 dark:text-soft-cream/40'}`}
+                onClick={() => setIsFilterOpen(!isFilterOpen)}
+                className="flex items-center gap-2 px-6 py-3 bg-primary text-forest-green rounded-2xl text-xs font-black uppercase tracking-widest shadow-md hover:brightness-105 transition-all w-fit"
               >
-                Boutique
+                <span>{searchType === 'RESTAURANT' ? 'Restaurant' : 'Boutique'}</span>
+                <span className={`material-symbols-outlined text-sm transition-transform duration-300 ${isFilterOpen ? 'rotate-180' : ''}`}>expand_more</span>
               </button>
+              
+              <AnimatePresence>
+                {isFilterOpen && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    className="absolute top-full left-0 mt-2 w-48 z-[70] bg-white dark:bg-background-dark border border-forest-green/10 dark:border-soft-cream/10 rounded-2xl shadow-2xl overflow-hidden py-2"
+                  >
+                    <button 
+                      onClick={() => { setSearchType('RESTAURANT'); setIsFilterOpen(false); }}
+                      className={`w-full flex items-center justify-between px-6 py-4 text-xs font-black uppercase tracking-widest hover:bg-forest-green/5 dark:hover:bg-soft-cream/5 transition-all ${searchType === 'RESTAURANT' ? 'text-primary' : 'text-forest-green/60 dark:text-soft-cream/60'}`}
+                    >
+                      Restaurant
+                      {searchType === 'RESTAURANT' && <span className="material-symbols-outlined text-sm">check</span>}
+                    </button>
+                    <button 
+                      onClick={() => { setSearchType('SHOP'); setIsFilterOpen(false); }}
+                      className={`w-full flex items-center justify-between px-6 py-4 text-xs font-black uppercase tracking-widest hover:bg-forest-green/5 dark:hover:bg-soft-cream/5 transition-all ${searchType === 'SHOP' ? 'text-primary' : 'text-forest-green/60 dark:text-soft-cream/60'}`}
+                    >
+                      Boutique
+                      {searchType === 'SHOP' && <span className="material-symbols-outlined text-sm">check</span>}
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
             <div className="relative">
               <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-forest-green/40 dark:text-soft-cream/40">
