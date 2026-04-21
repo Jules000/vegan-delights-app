@@ -93,7 +93,7 @@ export default function CheckoutClient({ session }: { session: any }) {
             </div>
             
             <div className="space-y-6 mb-8 flex-1 overflow-y-auto pr-2">
-              {items.map((item) => (
+              {items.map((item: any) => (
                 <div key={item.id} className="flex gap-4 items-center">
                   <div className="size-20 rounded-xl bg-soft-cream overflow-hidden shadow-sm shrink-0">
                     <img src={item.image} className="w-full h-full object-cover" alt={item.nameFr} />

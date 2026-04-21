@@ -62,7 +62,7 @@ export default async function AdminSubcategoriesPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-black/5">
-                {subcategories.map((sub) => (
+                {subcategories.map((sub: any) => (
                   <tr key={sub.id} className="hover:bg-admin-cream/50 transition-colors group">
                     <td className="px-6 py-4">
                       <span className={`text-[10px] font-black uppercase tracking-tighter px-2 py-1 rounded-full ${sub.productType === 'RESTAURANT' ? 'bg-orange-100 text-orange-600' : 'bg-blue-100 text-blue-600'}`}>

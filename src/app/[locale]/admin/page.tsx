@@ -88,7 +88,7 @@ export default async function AdminDashboardPage() {
             </Link>
           </div>
           <div className="h-64 mt-4 w-full flex items-end justify-between gap-2 px-2">
-            {chartData.slice(-6).map((d, index) => (
+            {chartData.slice(-6).map((d: any, index: number) => (
               <div key={index} className="flex-1 flex flex-col items-center group">
                 <div 
                   className="w-full bg-admin-primary/10 group-hover:bg-admin-primary transition-all rounded-t-lg relative"

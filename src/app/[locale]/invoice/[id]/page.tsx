@@ -52,7 +52,7 @@ export default async function ClientInvoiceDetailPage({ params }: { params: Prom
             </tr>
           </thead>
           <tbody className="divide-y divide-black/5">
-            {invoice.order.items.map((item) => (
+            {invoice.order.items.map((item: any) => (
               <tr key={item.id}>
                 <td className="py-4 text-sm font-medium text-forest">
                   {item.product.nameFr}

@@ -51,7 +51,7 @@ export default async function AdminInvoiceDetailPage({ params }: { params: Promi
             </tr>
           </thead>
           <tbody className="divide-y divide-black/5">
-            {invoice.order.items.map((item) => (
+            {invoice.order.items.map((item: any) => (
               <tr key={item.id}>
                 <td className="py-4 text-sm font-bold text-admin-forest">
                   {item.product.nameFr}

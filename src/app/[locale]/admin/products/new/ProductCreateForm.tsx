@@ -216,7 +216,7 @@ export default function ProductCreateForm({ subcategories }: { subcategories: an
               <span className="text-xs font-bold text-admin-primary px-3 py-1 bg-admin-primary/10 rounded-full">PAR 100G</span>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {[1, 2, 3, 4].map((i) => (
+              {[1, 2, 3, 4].map((i: number) => (
                 <div key={i} className="bg-admin-cream p-4 rounded-lg border border-black/5 flex flex-col gap-2">
                   <div className="flex gap-2">
                     <input name={`nutritionLabel${i}Fr`} className="text-xs font-bold bg-white border border-black/10 p-2 rounded w-1/2" placeholder={`Label FR ${i}`} type="text" />

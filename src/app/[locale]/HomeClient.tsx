@@ -99,7 +99,7 @@ export default function HomeClient({
           <div 
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 px-6"
           >
-            {trendingProducts.map((p) => (
+            {trendingProducts.map((p: any) => (
               <ProductCard key={p.id} product={p} />
             ))}
           </div>
@@ -121,7 +121,7 @@ export default function HomeClient({
             </Link>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {restaurantProducts.map((p) => (
+            {restaurantProducts.map((p: any) => (
               <ProductCard key={p.id} product={p} />
             ))}
           </div>
@@ -143,7 +143,7 @@ export default function HomeClient({
             </Link>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {shopProducts.map((p) => (
+            {shopProducts.map((p: any) => (
               <div key={p.id} className="dark">
                 <ProductCard product={p} />
               </div>

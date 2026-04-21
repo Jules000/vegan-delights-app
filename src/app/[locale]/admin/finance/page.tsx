@@ -73,7 +73,7 @@ export default async function AdminFinancePage() {
           </h3>
           
           <div className="h-64 flex items-end justify-between gap-1">
-            {chartData.map((d: any, index) => (
+            {chartData.map((d: any, index: number) => (
               <div key={index} className="flex-1 flex flex-col items-center group relative">
                 {/* Tooltip visible on hover */}
                 <div className="absolute bottom-full mb-2 bg-admin-forest text-white text-[10px] py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10 font-bold">
