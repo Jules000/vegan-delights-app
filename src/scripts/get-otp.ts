@@ -1,4 +1,4 @@
-import { PrismaClient } from '../generated/client';
+import { PrismaClient } from '@prisma/client';
 import "dotenv/config";
 
 async function getOtp(email: string) {
