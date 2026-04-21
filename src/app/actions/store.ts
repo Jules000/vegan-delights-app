@@ -1,6 +1,36 @@
 "use server";
 
 import prisma from "@/lib/prisma";
+import { sendNewsletterWelcomeEmail } from "@/lib/email";
+
+export async function subscribeToNewsletter(email: string, locale: string) {
+  if (!email || !email.includes('@')) {
+    return { success: false, error: 'Invalid email' };
+  }
+
+  try {
+    const existing = await prisma.subscriber.findUnique({
+      where: { email }
+    });
+
+    if (existing) {
+      return { success: true, alreadySubscribed: true };
+    }
+
+    await prisma.subscriber.create({
+      data: { email }
+    });
+
+    // Trigger welcome email asynchronously
+    // Don't await it to keep response fast
+    sendNewsletterWelcomeEmail(email, locale).catch(console.error);
+
+    return { success: true };
+  } catch (error) {
+    console.error('Newsletter subscription error:', error);
+    return { success: false, error: 'Internal server error' };
+  }
+}
 
 export async function getTrendingProducts(limit = 6) {
   // Try to find products that appear most in orders

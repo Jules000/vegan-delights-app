@@ -1,10 +1,12 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import ProductCard from '@/components/ui/ProductCard';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import MenuBanner from '@/components/layout/MenuBanner';
 import { Link } from '@/i18n/routing';
+import { subscribeToNewsletter } from '@/app/actions/store';
 
 interface HomeClientProps {
   menuOfTheDay: any;
@@ -20,13 +22,41 @@ export default function HomeClient({
   shopProducts 
 }: HomeClientProps) {
   const t = useTranslations('Index');
+  const locale = useLocale();
+  
+  // Newsletter State
+  const [email, setEmail] = useState('');
+  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [message, setMessage] = useState('');
+
+  const handleSubscribe = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) return;
+
+    setStatus('loading');
+    try {
+      const result = await subscribeToNewsletter(email, locale);
+      if (result.success) {
+        setStatus('success');
+        setMessage(result.alreadySubscribed 
+          ? (locale === 'en' ? "You're already part of the family!" : "Vous faites déjà partie de la famille !") 
+          : (locale === 'en' ? "Welcome aboard! Check your inbox." : "Bienvenue à bord ! Vérifiez votre boîte mail."));
+        setEmail('');
+      } else {
+        setStatus('error');
+        setMessage(locale === 'en' ? "Something went wrong. Please try again." : "Une erreur est survenue. Veuillez réessayer.");
+      }
+    } catch (err) {
+      setStatus('error');
+    }
+  };
 
   return (
     <>
       {/* Menu of the Day Banner */}
       {menuOfTheDay && <MenuBanner product={menuOfTheDay} />}
 
-      {/* Hero Section */}
+      {/* Hero Section (remains the same) ... */}
       <section className="relative w-full h-[70vh] overflow-hidden">
         <div 
           className="absolute inset-0 bg-cover bg-center" 
@@ -135,10 +165,49 @@ export default function HomeClient({
           </div>
           <h3 className="font-serif text-5xl mb-6 font-black tracking-tight text-forest-green">{t('newsletter_title')}</h3>
           <p className="text-forest-green/60 dark:text-soft-cream/60 mb-12 text-xl max-w-2xl mx-auto">{t('newsletter_desc')}</p>
-          <form className="flex flex-col sm:flex-row gap-4 max-w-xl mx-auto" onSubmit={(e) => e.preventDefault()}>
-            <input className="flex-1 rounded-full px-8 py-5 bg-white shadow-inner border-transparent focus:ring-2 focus:ring-primary outline-none text-forest-green text-lg" placeholder={t('newsletter_placeholder')} type="email"/>
-            <button className="bg-forest-green text-white dark:bg-primary dark:text-forest-green font-black px-12 py-5 rounded-full hover:scale-105 active:scale-95 transition-all shadow-xl">{t('subscribe')}</button>
-          </form>
+          
+          <AnimatePresence mode="wait">
+            {status === 'success' ? (
+              <motion.div 
+                key="success"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-primary/20 border border-primary/40 px-8 py-6 rounded-3xl max-w-xl mx-auto"
+              >
+                <p className="text-forest-green font-black text-lg">{message}</p>
+              </motion.div>
+            ) : (
+              <motion.form 
+                key="form"
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="flex flex-col sm:flex-row gap-4 max-w-xl mx-auto relative group" 
+                onSubmit={handleSubscribe}
+              >
+                <input 
+                  className="flex-1 rounded-full px-8 py-5 bg-white shadow-inner border-transparent focus:ring-2 focus:ring-primary outline-none text-forest-green text-lg disabled:opacity-50" 
+                  placeholder={t('newsletter_placeholder')} 
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  disabled={status === 'loading'}
+                />
+                <button 
+                  disabled={status === 'loading'}
+                  className="bg-forest-green text-white dark:bg-primary dark:text-forest-green font-black px-12 py-5 rounded-full hover:scale-105 active:scale-95 transition-all shadow-xl disabled:opacity-50 disabled:hover:scale-100 flex items-center justify-center min-w-[180px]"
+                >
+                  {status === 'loading' ? (
+                    <div className="size-6 border-4 border-white/30 border-t-white rounded-full animate-spin" />
+                  ) : t('subscribe')}
+                </button>
+              </motion.form>
+            )}
+          </AnimatePresence>
+
+          {status === 'error' && (
+            <p className="mt-4 text-red-500 font-bold">{message}</p>
+          )}
+
           <p className="mt-8 text-[11px] text-forest-green/40 uppercase tracking-[0.3em] font-bold">Zéro spam. Que de la passion végétale.</p>
         </motion.div>
       </section>
