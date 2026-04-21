@@ -438,12 +438,17 @@ export async function deleteAdminSubcategory(formData: FormData) {
 
 // Newsletter
 export async function getNewsletterRecipientCounts() {
+  // Defensive check for model existence
+  if (!(prisma as any).subscriber) {
+    console.error("PRISMA_ERROR: 'subscriber' model missing from client keys:", Object.keys(prisma));
+    return { customerCount: 0, subscriberCount: 0, error: "Modèle Subscriber introuvable dans le client." };
+  }
+
   const [customerCount, subscriberCount] = await Promise.all([
-    prisma.customer.count({ where: { password: { not: null } } }), // Only actual account holders
+    prisma.customer.count({ where: { password: { not: null } } }), 
     prisma.subscriber.count()
   ]);
 
-  // For total unique, we might need a more complex query or just handle it in the action
   return {
     customerCount,
     subscriberCount,
@@ -491,4 +496,81 @@ export async function sendNewsletterAction(prevState: any, formData: FormData) {
     await logActionError("sendNewsletterAction", error);
     return { error: "Une erreur est survenue lors de l'envoi du mailing." };
   }
+}
+
+// Finance
+export async function getFinanceStats() {
+  const [revenueAggregation, pendingAggregation] = await Promise.all([
+    prisma.order.aggregate({
+      where: { status: "COMPLETED" },
+      _sum: { total: true, deliveryFee: true },
+      _count: { id: true }
+    }),
+    prisma.order.aggregate({
+      where: { status: "PENDING" },
+      _sum: { total: true }
+    })
+  ]);
+
+  const totalGross = revenueAggregation._sum.total || 0;
+  const totalDeliveryFees = revenueAggregation._sum.deliveryFee || 0;
+  const netRevenue = totalGross - totalDeliveryFees; // Simplified net: total minus shipping
+  const pendingAmount = pendingAggregation._sum.total || 0;
+
+  return {
+    totalGross,
+    totalDeliveryFees,
+    netRevenue,
+    pendingAmount,
+    completedCount: revenueAggregation._count.id
+  };
+}
+
+export async function getMonthlyRevenueData() {
+  // Fetch orders from last 12 months
+  const now = new Date();
+  const oneYearAgo = new Date(now.getFullYear() - 1, now.getMonth(), 1);
+
+  const orders = await prisma.order.findMany({
+    where: {
+      status: "COMPLETED",
+      createdAt: { gte: oneYearAgo }
+    },
+    select: {
+      total: true,
+      createdAt: true
+    }
+  });
+
+  // Group by month
+  const monthlyData: { [key: string]: number } = {};
+  
+  // Initialize last 12 months with 0
+  for (let i = 0; i < 12; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const label = d.toLocaleString('fr-FR', { month: 'short', year: '2-digit' });
+    monthlyData[label] = 0;
+  }
+
+  orders.forEach(order => {
+    const label = order.createdAt.toLocaleString('fr-FR', { month: 'short', year: '2-digit' });
+    if (monthlyData.hasOwnProperty(label)) {
+      monthlyData[label] += order.total;
+    }
+  });
+
+  // Convert to array and reverse to handle chronological order
+  return Object.entries(monthlyData)
+    .map(([name, total]) => ({ name, total }))
+    .reverse();
+}
+
+export async function getPaymentTransactions() {
+  return await prisma.order.findMany({
+    orderBy: { createdAt: "desc" },
+    include: {
+      customer: true,
+    },
+    take: 50 // Recent 50 for reconciliation
+  });
 }
