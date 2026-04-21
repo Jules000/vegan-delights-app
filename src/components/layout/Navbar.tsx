@@ -168,10 +168,20 @@ export default function Navbar({ session }: { session: any }) {
               </div>
               <h1 className="font-serif text-2xl font-black tracking-tight dark:text-white">Vegan Delights</h1>
             </Link>
-            <nav className="hidden lg:flex items-center gap-8">
-              {navLinks.map((link) => (
-                <Link key={link.id} className="text-sm font-semibold hover:text-primary transition-colors" href={link.href as any}>{link.label}</Link>
-              ))}
+            <nav className="hidden lg:flex items-center gap-10">
+              {navLinks.map((link) => {
+                const isActive = pathname === link.href;
+                return (
+                  <Link 
+                    key={link.id} 
+                    className={`relative text-xs font-black uppercase tracking-widest transition-all duration-300 group py-1 ${isActive ? 'text-forest-green dark:text-white' : 'text-forest-green/60 dark:text-soft-cream/60 hover:text-primary'}`} 
+                    href={link.href as any}
+                  >
+                    {link.label}
+                    <span className={`absolute bottom-0 left-0 h-0.5 bg-primary transition-all duration-300 ${isActive ? 'w-full' : 'w-0 group-hover:w-full'}`} />
+                  </Link>
+                );
+              })}
             </nav>
           </div>
           <div className="flex items-center gap-2 md:gap-4">
