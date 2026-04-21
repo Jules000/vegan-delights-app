@@ -56,7 +56,7 @@ export default function RegisterPage() {
       return;
     }
 
-    registerAction(formData);
+    (registerAction as any)(formData);
   };
 
   return (
