@@ -1,6 +1,9 @@
 import { SignJWT, jwtVerify } from "jose";
 
-const secretKey = process.env.JWT_SECRET || "fallback_secret_for_dev_only";
+const secretKey = process.env.JWT_SECRET;
+if (!secretKey) {
+  throw new Error("CRITICAL SECURITY ERROR: JWT_SECRET environment variable is not defined.");
+}
 const key = new TextEncoder().encode(secretKey);
 
 export async function encrypt(payload: any) {

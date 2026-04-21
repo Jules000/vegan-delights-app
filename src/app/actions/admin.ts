@@ -6,11 +6,27 @@ import path from "path";
 import { writeFile, appendFile } from "fs/promises";
 import { redirect } from "next/navigation";
 
-// Logging helper for Server Actions
+import { getSession } from "@/app/actions/auth";
+
+// Authorization helper to ensure deep security (defense-in-depth)
+async function ensureAdmin() {
+  const session = await getSession();
+  if (!session || session.user.role !== "ADMIN" || !session.mfaVerified) {
+    throw new Error("UNAUTHORIZED_ACCESS: Administrative privileges and MFA verification required.");
+  }
+  return session;
+}
+
+// Logging helper for Server Actions - sanitized for security (OWASP A09)
 async function logActionError(action: string, error: any) {
   const logPath = path.join(process.cwd(), "src/app/actions/error-log.txt");
   const timestamp = new Date().toISOString();
-  const message = `[${timestamp}] ${action}: ${error instanceof Error ? error.message : JSON.stringify(error)}\n${error instanceof Error ? error.stack : ""}\n---\n`;
+  
+  // Sanitize: Avoid logging potential sensitive stack traces or raw JSON that might contain credentials
+  const errorMessage = error instanceof Error ? error.message : "Internal Server Error";
+  const sanitizedAction = action.replace(/[^a-zA-Z0-9_]/g, "");
+  
+  const message = `[${timestamp}] ${sanitizedAction}: ${errorMessage}\n---\n`;
   try {
     await appendFile(logPath, message);
   } catch (e) {
@@ -20,6 +36,7 @@ async function logActionError(action: string, error: any) {
 
 // Dashboard
 export async function getDashboardStats() {
+  await ensureAdmin();
   const [revenueAggregation, activeOrdersCount, customersCount] = await Promise.all([
     prisma.order.aggregate({
       where: { status: { not: "CANCELLED" } },
@@ -46,18 +63,21 @@ export async function getDashboardStats() {
 
 // Products
 export async function getAdminProducts() {
+  await ensureAdmin();
   return await prisma.product.findMany({
     orderBy: { createdAt: "desc" },
   });
 }
 
 export async function getAdminProductById(id: string) {
+  await ensureAdmin();
   return await prisma.product.findUnique({
     where: { id }
   });
 }
 
 export async function createAdminProduct(prevState: any, formData: FormData) {
+  await ensureAdmin();
   // Parsing simple fields
   const nameFr = formData.get("nameFr") as string;
   const nameEn = formData.get("nameEn") as string;
@@ -78,11 +98,19 @@ export async function createAdminProduct(prevState: any, formData: FormData) {
   const imageFile = formData.get("image") as File;
   let imageUrl = "/placeholder.jpg"; // Default fallback
 
-  if (imageFile && imageFile.name && imageFile.size > 0) {
+    // OWASP A04: Insecure Design - Validate MIME type and size
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+    if (!allowedTypes.includes(imageFile.type)) {
+      return { success: false, error: "Type de fichier non supporté. Utilisez JPG, PNG ou WEBP." };
+    }
+    if (imageFile.size > 5 * 1024 * 1024) { // 5MB limit
+      return { success: false, error: "L'image est trop volumineuse (max 5Mo)." };
+    }
+
     const bytes = await imageFile.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // Replace spaces and special characters
+    // Replace spaces and special characters for security
     const safeName = imageFile.name.replace(/[^a-zA-Z0-9.\-_]/g, "_");
     const uniqueName = `${Date.now()}_${safeName}`;
     const uploadPath = path.join(process.cwd(), "public", "media", uniqueName);
@@ -96,6 +124,15 @@ export async function createAdminProduct(prevState: any, formData: FormData) {
   let bannerImageUrl = null;
 
   if (bannerImageFile && bannerImageFile.name && bannerImageFile.size > 0) {
+    // OWASP A04: Insecure Design - Validate MIME type and size
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+    if (!allowedTypes.includes(bannerImageFile.type)) {
+      return { success: false, error: "Type de bannière non supporté. Utilisez JPG, PNG ou WEBP." };
+    }
+    if (bannerImageFile.size > 5 * 1024 * 1024) {
+      return { success: false, error: "La bannière est trop volumineuse (max 5Mo)." };
+    }
+
     const bBytes = await bannerImageFile.arrayBuffer();
     const bBuffer = Buffer.from(bBytes);
     const bSafeName = bannerImageFile.name.replace(/[^a-zA-Z0-9.\-_]/g, "_");
@@ -161,6 +198,7 @@ export async function createAdminProduct(prevState: any, formData: FormData) {
 }
 
 export async function updateAdminProduct(formData: FormData) {
+  await ensureAdmin();
   const id = formData.get("id") as string;
   if (!id) return;
 
@@ -185,6 +223,14 @@ export async function updateAdminProduct(formData: FormData) {
 
   const imageFile = formData.get("image") as File | null;
   if (imageFile && imageFile.name && imageFile.size > 0) {
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+    if (!allowedTypes.includes(imageFile.type)) {
+      return { success: false, error: "Type de fichier non supporté. Utilisez JPG, PNG ou WEBP." };
+    }
+    if (imageFile.size > 5 * 1024 * 1024) {
+      return { success: false, error: "L'image est trop volumineuse (max 5Mo)." };
+    }
+
     const bytes = await imageFile.arrayBuffer();
     const buffer = Buffer.from(bytes);
     const safeName = imageFile.name.replace(/[^a-zA-Z0-9.\-_]/g, "_");
@@ -197,6 +243,14 @@ export async function updateAdminProduct(formData: FormData) {
 
   const bannerImageFile = formData.get("bannerImage") as File | null;
   if (bannerImageFile && bannerImageFile.name && bannerImageFile.size > 0) {
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+    if (!allowedTypes.includes(bannerImageFile.type)) {
+      return { success: false, error: "Type de bannière non supporté. Utilisez JPG, PNG ou WEBP." };
+    }
+    if (bannerImageFile.size > 5 * 1024 * 1024) {
+      return { success: false, error: "La bannière est trop volumineuse (max 5Mo)." };
+    }
+
     const bBytes = await bannerImageFile.arrayBuffer();
     const bBuffer = Buffer.from(bBytes);
     const bSafeName = bannerImageFile.name.replace(/[^a-zA-Z0-9.\-_]/g, "_");
@@ -243,6 +297,7 @@ export async function updateAdminProduct(formData: FormData) {
 }
 
 export async function deleteAdminProduct(formData: FormData) {
+  await ensureAdmin();
   const id = formData.get("id") as string;
   if (!id) return;
 
@@ -256,6 +311,7 @@ export async function deleteAdminProduct(formData: FormData) {
 // Orders
 
 export async function getAdminOrders() {
+  await ensureAdmin();
   return await prisma.order.findMany({
     orderBy: { createdAt: "desc" },
     include: {
@@ -269,6 +325,7 @@ export async function getAdminOrders() {
 }
 
 export async function updateOrderStatus(formData: FormData) {
+  await ensureAdmin();
   const id = formData.get("id") as string;
   const status = formData.get("status") as string;
 
@@ -336,6 +393,7 @@ export async function updateOrderStatus(formData: FormData) {
 
 // Customers
 export async function getAdminCustomers() {
+  await ensureAdmin();
   return await prisma.customer.findMany({
     orderBy: { createdAt: "desc" },
   });
@@ -343,6 +401,7 @@ export async function getAdminCustomers() {
 
 // Invoices
 export async function getAdminInvoices() {
+  await ensureAdmin();
   return await prisma.invoice.findMany({
     orderBy: { issuedAt: "desc" },
     include: {
@@ -353,6 +412,7 @@ export async function getAdminInvoices() {
 }
 
 export async function getInvoiceById(id: string) {
+  await ensureAdmin();
   return await prisma.invoice.findUnique({
     where: { id },
     include: {
@@ -369,6 +429,7 @@ export async function getInvoiceById(id: string) {
 }
 // Subcategories
 export async function getAdminSubcategories() {
+  await ensureAdmin();
   return await prisma.subcategory.findMany({
     orderBy: [
         { productType: 'asc' },
@@ -378,6 +439,7 @@ export async function getAdminSubcategories() {
 }
 
 export async function createAdminSubcategory(formData: FormData) {
+  await ensureAdmin();
   const nameFr = formData.get("nameFr") as string;
   const nameEn = formData.get("nameEn") as string;
   const productType = formData.get("productType") as any;
@@ -401,6 +463,7 @@ export async function createAdminSubcategory(formData: FormData) {
 }
 
 export async function updateAdminSubcategory(formData: FormData) {
+  await ensureAdmin();
   const id = formData.get("id") as string;
   const nameFr = formData.get("nameFr") as string;
   const nameEn = formData.get("nameEn") as string;
@@ -425,6 +488,7 @@ export async function updateAdminSubcategory(formData: FormData) {
 }
 
 export async function deleteAdminSubcategory(formData: FormData) {
+  await ensureAdmin();
   const id = formData.get("id") as string;
   if (!id) return;
 
@@ -438,6 +502,7 @@ export async function deleteAdminSubcategory(formData: FormData) {
 
 // Newsletter
 export async function getNewsletterRecipientCounts() {
+  await ensureAdmin();
   // Defensive check for model existence
   if (!(prisma as any).subscriber) {
     console.error("PRISMA_ERROR: 'subscriber' model missing from client keys:", Object.keys(prisma));
@@ -456,6 +521,7 @@ export async function getNewsletterRecipientCounts() {
 }
 
 export async function sendNewsletterAction(prevState: any, formData: FormData) {
+  await ensureAdmin();
   const target = formData.get("target") as string; // 'subscribers', 'customers', 'all'
   const senderKey = formData.get("sender") as any;
   const subject = formData.get("subject") as string;
@@ -500,6 +566,7 @@ export async function sendNewsletterAction(prevState: any, formData: FormData) {
 
 // Finance
 export async function getFinanceStats() {
+  await ensureAdmin();
   const [revenueAggregation, pendingAggregation] = await Promise.all([
     prisma.order.aggregate({
       where: { status: "COMPLETED" },
@@ -527,6 +594,7 @@ export async function getFinanceStats() {
 }
 
 export async function getMonthlyRevenueData() {
+  await ensureAdmin();
   // Fetch orders from last 12 months
   const now = new Date();
   const oneYearAgo = new Date(now.getFullYear() - 1, now.getMonth(), 1);
@@ -566,6 +634,7 @@ export async function getMonthlyRevenueData() {
 }
 
 export async function getPaymentTransactions() {
+  await ensureAdmin();
   return await prisma.order.findMany({
     orderBy: { createdAt: "desc" },
     include: {
