@@ -8,7 +8,7 @@ export default function AdminNewsletterPage() {
   const [counts, setCounts] = useState<{ customerCount: number; subscriberCount: number } | null>(null);
   const [target, setTarget] = useState<'subscribers' | 'customers' | 'all'>('subscribers');
   
-  const [state, formAction, isPending] = useActionState(sendNewsletterAction as any, { success: false, error: '' });
+  const [state, formAction, isPending] = useActionState(sendNewsletterAction as any, { success: false, error: '', count: 0 });
 
   useEffect(() => {
     getNewsletterRecipientCounts().then(setCounts);
