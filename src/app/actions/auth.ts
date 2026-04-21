@@ -124,7 +124,7 @@ export async function registerUser(prevState: any, formData: FormData) {
   });
 
   if (!validation.success) {
-    return { error: validation.error.errors[0].message };
+    return { error: validation.error.issues[0].message };
   }
 
   const existingByEmail = await prisma.customer.findUnique({ where: { email } });
