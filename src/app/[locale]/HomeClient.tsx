@@ -122,44 +122,6 @@ export default function HomeClient({
         </div>
       </section>
 
-      {/* Curated Collections */}
-      <section className="py-24 bg-white dark:bg-background-dark">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-16">
-            <h3 className="font-serif text-5xl font-black text-forest-green dark:text-soft-cream mb-4 tracking-tighter">Collections Sélectives</h3>
-            <div className="w-24 h-2 bg-primary mx-auto rounded-full"></div>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="relative h-[600px] rounded-3xl overflow-hidden group cursor-pointer col-span-1 md:col-span-2">
-              <div 
-                className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 group-hover:scale-110" 
-                style={{ backgroundImage: "linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.8)), url('https://lh3.googleusercontent.com/aida-public/AB6AXuCMeuwOFH-E8_p3ZC9TxBK6uUtzU8xldBPWMAEUD2-Oy6A-LwdaTArnBrXIJPr-9cQ8XChYFSFc-ZkwGHtW0N36KykzTfdPMor6CmP9Vhh8cwXZy9l0OcKkhNLJcq_tjdrPN6vmp-EuvhzuoAkNmoKTMpMOO_wkWGXHsjaQ8MLFbCfB2aAzm6ci-RUzQd6qBsz-pQJIp0fpYIoyCbjMuSaz43ZaSpbkPZ3n7jE7DXUv_gFyxSbwN85UzOLOfkwQJpYhZw80kyTp0t9m')" }}
-              />
-              <div className="absolute inset-0 p-12 flex flex-col justify-end text-white">
-                <span className="text-primary font-bold uppercase tracking-[0.4em] text-xs mb-4">Innovation</span>
-                <h4 className="font-serif text-5xl mb-6 font-black tracking-tight">Viandes Next-Gen</h4>
-                <p className="mb-8 text-white/70 max-w-md text-lg leading-relaxed font-light">Découvrez le seitan, le jackfruit et nos mélanges de champignons qui redéfinissent ce qui est possible.</p>
-                <Link href="/shop" className="w-fit text-sm font-black uppercase tracking-[0.2em] bg-white text-forest-green px-8 py-3 rounded-full hover:bg-primary transition-colors">Découvrir la collection</Link>
-              </div>
-            </div>
-            
-            <div className="relative h-[600px] rounded-3xl overflow-hidden group cursor-pointer shadow-2xl">
-              <div 
-                className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 group-hover:scale-110" 
-                style={{ backgroundImage: "linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.8)), url('https://lh3.googleusercontent.com/aida-public/AB6AXuAknkgIPy3iDfCUcheFAdfRN0AxxQVx91HfZ_8otDiSzS0_xmnYEKvKBh-PNyvbEMSy_L-nceAYUR3TxaGu8cbTki4lhc1FLvI_o81Axtya-nMd0haUo18Yay86OdDbXXpgDte1P9_kiPeQaQ-7rTV3gtcEjOct9AXewsp-yZm814vrKF-HY8d4n7bfBcXAHlmY5Ex7gXAw0LXhpsFkMhs8OCGlJsF5lSmlRPWWizB-v0ZXMDoeOAQSVgriS2FrpjZQs-P4cwSbAqVe')" }}
-              />
-              <div className="absolute inset-0 p-10 flex flex-col justify-end text-white">
-                <span className="text-primary font-bold uppercase tracking-[0.4em] text-xs mb-4">Essentiels</span>
-                <h4 className="font-serif text-5xl mb-6 font-black tracking-tight">Le Garde-Manger</h4>
-                <p className="mb-8 text-white/70 text-lg leading-relaxed font-light">Incontournables biologiques pour une cuisine végane moderne et raffinée.</p>
-                <Link href="/shop" className="w-fit text-sm font-black uppercase tracking-[0.2em] bg-primary text-forest-green px-8 py-3 rounded-full hover:brightness-110 transition-all">Parcourir</Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Newsletter */}
       <section className="py-32 bg-soft-cream dark:bg-background-dark/50">
         <motion.div 
