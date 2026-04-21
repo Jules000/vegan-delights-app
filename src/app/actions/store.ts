@@ -113,3 +113,23 @@ export async function getMenuOfTheDay() {
     where: { menuDay: day as any }
   });
 }
+
+export async function searchProducts(query: string, type: 'RESTAURANT' | 'SHOP' = 'RESTAURANT', limit = 8) {
+  if (!query || query.length < 2) return [];
+
+  return await prisma.product.findMany({
+    where: {
+      productType: type,
+      OR: [
+        { nameEn: { contains: query, mode: 'insensitive' } },
+        { nameFr: { contains: query, mode: 'insensitive' } },
+        { descEn: { contains: query, mode: 'insensitive' } },
+        { descFr: { contains: query, mode: 'insensitive' } },
+        { category: { contains: query, mode: 'insensitive' } }
+      ]
+    },
+    take: limit,
+    orderBy: { createdAt: 'desc' }
+  });
+}
+

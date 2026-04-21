@@ -1,12 +1,11 @@
-'use client';
-
 import { Link, usePathname, useRouter } from '@/i18n/routing';
 import { useLocale, useTranslations } from 'next-intl';
 import { logoutUser } from '@/app/actions/auth';
 import { useCartStore } from '@/store/cartStore';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import SideCart from './SideCart';
+import { searchProducts } from '@/app/actions/store';
 
 function CartBadge() {
   const [mounted, setMounted] = useState(false);
@@ -37,14 +36,58 @@ export default function Navbar({ session }: { session: any }) {
   const locale = useLocale();
   const router = useRouter();
   const pathname = usePathname();
-  const openCart = useCartStore((state) => state.openCart);
+  const { openCart, addItem } = useCartStore();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUserMenuHovered, setIsUserMenuHovered] = useState(false);
+  
+  // Search State
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchType, setSearchType] = useState<'RESTAURANT' | 'SHOP'>('RESTAURANT');
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [showResults, setShowResults] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
+  const mobileSearchRef = useRef<HTMLDivElement>(null);
 
   const handleLanguageChange = () => {
     const nextLocale = locale === 'en' ? 'fr' : 'en';
     router.replace(pathname, { locale: nextLocale });
   };
+
+  // Debounced Search Logic
+  useEffect(() => {
+    if (searchQuery.trim().length < 2) {
+      setSearchResults([]);
+      setShowResults(false);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      setIsSearching(true);
+      try {
+        const results = await searchProducts(searchQuery, searchType);
+        setSearchResults(results);
+        setShowResults(true);
+      } catch (error) {
+        console.error("Search failed:", error);
+      } finally {
+        setIsSearching(false);
+      }
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery, searchType]);
+
+  // Close results when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        setShowResults(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const navLinks = [
     { href: '/', label: t('nav_home'), id: 'home' },
@@ -54,6 +97,65 @@ export default function Navbar({ session }: { session: any }) {
   ];
 
   const firstName = session?.name?.split(' ')[0] || '';
+
+  const SearchDropdown = ({ isMobile = false }) => (
+    <AnimatePresence>
+      {showResults && searchResults.length > 0 && (
+        <motion.div 
+          initial={{ opacity: 0, y: 10, scale: 0.98 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: 10, scale: 0.98 }}
+          className={`${isMobile ? 'relative mt-2' : 'absolute top-full left-0 right-0 mt-2'} z-50 bg-white/95 dark:bg-background-dark/95 backdrop-blur-xl border border-forest-green/10 dark:border-soft-cream/10 rounded-2xl shadow-2xl max-h-[400px] overflow-y-auto custom-scrollbar`}
+        >
+          <div className="p-3 space-y-2">
+            {searchResults.map((product) => (
+              <div key={product.id} className="flex items-center gap-3 p-2 hover:bg-forest-green/5 dark:hover:bg-soft-cream/5 rounded-xl transition-colors group">
+                <Link 
+                  href={`/product/${product.id}`} 
+                  onClick={() => {
+                    setShowResults(false);
+                    setIsMenuOpen(false);
+                    setSearchQuery('');
+                  }}
+                  className="flex-1 flex items-center gap-3 cursor-pointer"
+                >
+                  <div className="size-12 rounded-lg bg-cover bg-center border border-forest-green/5" style={{ backgroundImage: `url(${product.image})` }} />
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-bold text-sm truncate">{locale === 'en' ? product.nameEn : product.nameFr}</h4>
+                    <p className="text-xs text-forest-green/60 dark:text-soft-cream/60">{product.price.toLocaleString(locale)} FCFA</p>
+                  </div>
+                </Link>
+                <button 
+                  onClick={() => {
+                    addItem({
+                      id: product.id,
+                      name: locale === 'en' ? product.nameEn : product.nameFr,
+                      price: product.price,
+                      image: product.image,
+                      quantity: 1
+                    });
+                  }}
+                  className="size-8 bg-primary/10 text-primary hover:bg-primary hover:text-white rounded-full flex items-center justify-center transition-all active:scale-90"
+                >
+                  <span className="material-symbols-outlined text-lg">add</span>
+                </button>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+      )}
+      {showResults && searchQuery.length >= 2 && searchResults.length === 0 && !isSearching && (
+         <motion.div 
+         initial={{ opacity: 0, y: 10 }}
+         animate={{ opacity: 1, y: 0 }}
+         className={`${isMobile ? 'relative mt-2' : 'absolute top-full left-0 right-0 mt-2'} z-50 bg-white/95 dark:bg-background-dark/95 backdrop-blur-xl border border-forest-green/10 dark:border-soft-cream/10 rounded-2xl p-6 text-center shadow-2xl`}
+       >
+         <span className="material-symbols-outlined text-4xl text-forest-green/20 dark:text-soft-cream/20 mb-2">search_off</span>
+         <p className="text-sm font-bold text-forest-green/40 dark:text-soft-cream/40">Aucun résultat pour "{searchQuery}"</p>
+       </motion.div>
+      )}
+    </AnimatePresence>
+  );
 
   return (
     <>
@@ -73,9 +175,38 @@ export default function Navbar({ session }: { session: any }) {
             </nav>
           </div>
           <div className="flex items-center gap-2 md:gap-4">
-            <div className="relative hidden lg:block">
-              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-forest-green/40 dark:text-soft-cream/40 text-xl">search</span>
-              <input className="bg-forest-green/5 dark:bg-soft-cream/5 border-none rounded-full pl-10 pr-4 py-2 text-sm w-64 focus:ring-1 focus:ring-primary outline-none" placeholder={t('search_placeholder')} type="text"/>
+            {/* Desktop Search Bar */}
+            <div className="relative hidden lg:block" ref={searchRef}>
+              <div className="flex items-center bg-forest-green/5 dark:bg-soft-cream/5 rounded-full border border-transparent focus-within:border-primary/30 transition-all">
+                <div className="flex p-1">
+                   <button 
+                    onClick={() => setSearchType('RESTAURANT')}
+                    className={`px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-full transition-all ${searchType === 'RESTAURANT' ? 'bg-primary text-forest-green shadow-sm' : 'text-forest-green/40 dark:text-soft-cream/40'}`}
+                  >
+                    Res.
+                  </button>
+                  <button 
+                    onClick={() => setSearchType('SHOP')}
+                    className={`px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-full transition-all ${searchType === 'SHOP' ? 'bg-primary text-forest-green shadow-sm' : 'text-forest-green/40 dark:text-soft-cream/40'}`}
+                  >
+                    Shop
+                  </button>
+                </div>
+                <div className="relative flex-1 flex items-center">
+                  <span className="material-symbols-outlined absolute left-2 text-forest-green/40 dark:text-soft-cream/40 text-xl">
+                    {isSearching ? 'progress_activity' : 'search'}
+                  </span>
+                  <input 
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onFocus={() => searchQuery.length >= 2 && setShowResults(true)}
+                    className="bg-transparent border-none pl-9 pr-4 py-2 text-sm w-48 xl:w-64 outline-none" 
+                    placeholder={searchType === 'RESTAURANT' ? 'Rechercher un plat...' : 'Rechercher un produit...'} 
+                    type="text"
+                  />
+                </div>
+              </div>
+              <SearchDropdown />
             </div>
             
             <button onClick={handleLanguageChange} className="hidden sm:flex p-2 hover:bg-primary/10 rounded-full transition-colors items-center font-bold text-xs uppercase">
@@ -154,17 +285,38 @@ export default function Navbar({ session }: { session: any }) {
           closed: { clipPath: "circle(0% at 100% 0)", opacity: 0 }
         }}
         transition={{ type: "spring", stiffness: 400, damping: 40 }}
-        className="fixed inset-0 z-[55] bg-white dark:bg-background-dark pt-28 px-10 flex flex-col pointer-events-auto lg:hidden"
+        className="fixed inset-0 z-[55] bg-white dark:bg-background-dark pt-24 px-10 flex flex-col pointer-events-auto lg:hidden overflow-y-auto custom-scrollbar"
       >
-        <div className="flex flex-col gap-10 mt-4">
+        <div className="flex flex-col gap-8 pb-10">
           {/* Prominent Mobile Search */}
-          <div className="relative">
-            <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-forest-green/40 dark:text-soft-cream/40">search</span>
-            <input 
-              className="w-full bg-forest-green/5 dark:bg-soft-cream/5 border-2 border-forest-green/10 dark:border-soft-cream/10 rounded-2xl pl-12 pr-4 py-5 text-lg focus:border-primary outline-none transition-all" 
-              placeholder={t('search_placeholder')} 
-              type="text"
-            />
+          <div className="relative mt-4 flex flex-col gap-4" ref={mobileSearchRef}>
+            <div className="flex p-1 bg-forest-green/5 dark:bg-soft-cream/5 rounded-2xl self-start">
+                <button 
+                onClick={() => setSearchType('RESTAURANT')}
+                className={`px-4 py-2 text-xs font-black uppercase tracking-widest rounded-xl transition-all ${searchType === 'RESTAURANT' ? 'bg-primary text-forest-green shadow-md' : 'text-forest-green/40 dark:text-soft-cream/40'}`}
+              >
+                Restaurant
+              </button>
+              <button 
+                onClick={() => setSearchType('SHOP')}
+                className={`px-4 py-2 text-xs font-black uppercase tracking-widest rounded-xl transition-all ${searchType === 'SHOP' ? 'bg-primary text-forest-green shadow-md' : 'text-forest-green/40 dark:text-soft-cream/40'}`}
+              >
+                Boutique
+              </button>
+            </div>
+            <div className="relative">
+              <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-forest-green/40 dark:text-soft-cream/40">
+                {isSearching ? 'progress_activity' : 'search'}
+              </span>
+              <input 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-forest-green/5 dark:bg-soft-cream/5 border-2 border-forest-green/10 dark:border-soft-cream/10 rounded-2xl pl-12 pr-4 py-5 text-lg focus:border-primary outline-none transition-all" 
+                placeholder={searchType === 'RESTAURANT' ? 'Quel plat vous ferait plaisir ?' : 'Trouvez vos produits bio...'} 
+                type="text"
+              />
+            </div>
+            <SearchDropdown isMobile />
           </div>
 
           <div className="flex flex-col gap-6">
@@ -184,7 +336,7 @@ export default function Navbar({ session }: { session: any }) {
             ))}
           </div>
 
-          <div className="mt-auto pt-10 pb-12 border-t border-forest-green/10 dark:border-soft-cream/10 space-y-6">
+          <div className="mt-8 pt-8 border-t border-forest-green/10 dark:border-soft-cream/10 space-y-6">
             <div className="flex items-center justify-between">
               <span className="font-bold text-forest-green/40 dark:text-soft-cream/40 uppercase tracking-widest text-sm">Language</span>
               <button 
