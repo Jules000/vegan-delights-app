@@ -5,8 +5,8 @@ const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 
 const nextConfig: NextConfig = {
   turbopack: {
-    root: "C:/Users/vandi/Downloads/stitch_vegan_delights_homepage (1)/vegan-delights-app",
-  }
+    root: process.env.NODE_ENV === "production" ? undefined : process.cwd(),
+  },
 };
 
 export default withNextIntl(nextConfig);
