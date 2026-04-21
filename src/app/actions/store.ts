@@ -47,7 +47,7 @@ export async function getTrendingProducts(limit = 6) {
   });
 
   if (topSellers.length > 0) {
-    const productIds = topSellers.map(item => item.productId);
+    const productIds = topSellers.map((item: any) => item.productId);
     return await prisma.product.findMany({
       where: {
         id: { in: productIds }
@@ -132,7 +132,7 @@ import { slugify } from "@/lib/slugify";
 
 export async function getStoreProductBySlug(slug: string) {
   const products = await prisma.product.findMany();
-  return products.find(p => {
+  return products.find((p: any) => {
     const slugEn = slugify(p.nameEn || '');
     const slugFr = slugify(p.nameFr || '');
     return slugEn === slug || slugFr === slug || p.id === slug;

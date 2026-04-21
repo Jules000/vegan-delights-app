@@ -471,7 +471,7 @@ export async function sendInvoiceEmail(invoiceId: string, locale: string) {
                         </tr>
                     </thead>
                     <tbody>
-                        ${invoice.order.items.map(item => `
+                        ${invoice.order.items.map((item: any) => `
                             <tr>
                                 <td>${isEn ? item.product.nameEn : item.product.nameFr}</td>
                                 <td style="text-align: center;">${item.quantity}</td>

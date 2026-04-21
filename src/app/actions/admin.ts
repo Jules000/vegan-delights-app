@@ -536,7 +536,7 @@ export async function sendNewsletterAction(prevState: any, formData: FormData) {
 
     if (target === 'subscribers' || target === 'all') {
       const subs = await prisma.subscriber.findMany({ select: { email: true } });
-      emails.push(...subs.map(s => s.email));
+      emails.push(...subs.map((s: any) => s.email));
     }
 
     if (target === 'customers' || target === 'all') {
@@ -544,7 +544,7 @@ export async function sendNewsletterAction(prevState: any, formData: FormData) {
         where: { password: { not: null } },
         select: { email: true } 
       });
-      emails.push(...custs.map(c => c.email));
+      emails.push(...custs.map((c: any) => c.email));
     }
 
     // Deduplicate
@@ -620,7 +620,7 @@ export async function getMonthlyRevenueData() {
     monthlyData[label] = 0;
   }
 
-  orders.forEach(order => {
+  orders.forEach((order: any) => {
     const label = order.createdAt.toLocaleString('fr-FR', { month: 'short', year: '2-digit' });
     if (monthlyData.hasOwnProperty(label)) {
       monthlyData[label] += order.total;

@@ -65,17 +65,17 @@ export default function ProductListing({ type, initialData, subcategories }: Pro
 
   // Subcategories are already filtered by type from the page, but just in case
   const filteredSubcategories = subcategories
-    .filter(s => s.productType === type)
+    .filter((s: any) => s.productType === type)
     .sort((a, b) => a.order - b.order);
 
-  const subOrder = filteredSubcategories.map(s => s.id);
+  const subOrder = filteredSubcategories.map((s: any) => s.id);
 
   const [isMount, setIsMount] = useState(true);
 
   const fetchInitialData = useCallback(async (cat: string, subs: string[], gf: boolean) => {
     setIsLoading(true);
     try {
-      const activeSubs = subcategories.filter(s => s.productType === type);
+      const activeSubs = subcategories.filter((s: any) => s.productType === type);
       const subData: Record<string, SubcategoryData> = {};
       
       // Fetch initial batch (4 products) for each subcategory in parallel
@@ -129,7 +129,7 @@ export default function ProductListing({ type, initialData, subcategories }: Pro
 
   const handleSubcategoryToggle = (subId: string) => {
     setActiveSubcategories(prev => 
-      prev.includes(subId) ? prev.filter(s => s !== subId) : [...prev, subId]
+      prev.includes(subId) ? prev.filter((s: any) => s !== subId) : [...prev, subId]
     );
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
