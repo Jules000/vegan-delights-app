@@ -138,7 +138,7 @@ export async function sendNewsletterMassEmail(
     
     try {
       await transporter.sendMail({
-        from: `"Vegan Delights" <${senderEmail}>`,
+        from: DEFAULT_FROM,
         to: senderEmail, // Sent to self
         bcc: batch,      // Recipients in BCC for privacy
         subject,
@@ -518,7 +518,7 @@ export async function sendInvoiceEmail(invoiceId: string, locale: string) {
 
   try {
     await transporter.sendMail({
-      from: `"Vegan Delights Billing" <${SENDER_EMAILS.billing}>`,
+      from: DEFAULT_FROM,
       to: invoice.customer.email,
       subject,
       html,
@@ -707,7 +707,7 @@ export async function sendNewsletterWelcomeEmail(email: string, locale: string) 
 
   try {
     await transporter.sendMail({
-      from: `"Jules-Renaud | Vegan Delights" <${SENDER_EMAILS.jules}>`,
+      from: DEFAULT_FROM,
       to: email,
       subject,
       html,
@@ -870,7 +870,7 @@ export async function sendPasswordResetEmail(email: string, name: string, token:
 
   try {
     await transporter.sendMail({
-      from: `"Vegan Delights Security" <${SENDER_EMAILS.verify}>`,
+      from: DEFAULT_FROM,
       to: email,
       subject,
       html,

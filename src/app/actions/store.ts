@@ -21,9 +21,8 @@ export async function subscribeToNewsletter(email: string, locale: string) {
       data: { email }
     });
 
-    // Trigger welcome email asynchronously
-    // Don't await it to keep response fast
-    sendNewsletterWelcomeEmail(email, locale).catch(console.error);
+    // Trigger welcome email
+    await sendNewsletterWelcomeEmail(email, locale);
 
     return { success: true };
   } catch (error) {
