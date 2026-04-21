@@ -42,7 +42,7 @@ export default function ResetPasswordPage() {
       return;
     }
 
-    formAction(formData);
+    (formAction as any)(formData);
   };
 
   if (!token) return null;

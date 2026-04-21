@@ -52,7 +52,7 @@ export default function CheckoutAuth() {
       return;
     }
 
-    registerAction(formData);
+    (registerAction as any)(formData);
   };
 
   // If register returns showOtp, we prioritize showing the OTP verification
