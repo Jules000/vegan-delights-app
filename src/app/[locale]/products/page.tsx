@@ -2,7 +2,7 @@ import { getAllStoreProducts } from "@/app/actions/store";
 import ProductCard from "@/components/ui/ProductCard";
 
 export default async function ProductsPage() {
-  const products = await getAllStoreProducts();
+  const { products } = await getAllStoreProducts();
 
   return (
     <div className="py-24 max-w-7xl mx-auto px-6">
