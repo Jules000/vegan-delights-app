@@ -33,7 +33,7 @@ export default async function Footer() {
         <div>
           <h5 className="font-bold mb-6 text-primary uppercase text-xs tracking-widest leading-none">Restaurant</h5>
           <ul className="space-y-4 text-sm text-white/60">
-            {restaurantSubs.slice(0, 5).map((sub) => (
+            {restaurantSubs.slice(0, 5).map((sub: any) => (
               <li key={sub.id}>
                 <Link className="hover:text-white transition-colors" href={`/restaurant?subcategory=${sub.id}`}>
                   {sub.nameEn}
@@ -50,7 +50,7 @@ export default async function Footer() {
         <div>
           <h5 className="font-bold mb-6 text-primary uppercase text-xs tracking-widest leading-none">Boutique</h5>
           <ul className="space-y-4 text-sm text-white/60">
-            {shopSubs.slice(0, 5).map((sub) => (
+            {shopSubs.slice(0, 5).map((sub: any) => (
               <li key={sub.id}>
                 <Link className="hover:text-white transition-colors" href={`/shop?subcategory=${sub.id}`}>
                   {sub.nameEn}

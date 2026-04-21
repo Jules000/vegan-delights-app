@@ -120,7 +120,7 @@ export default function SideCart() {
                   </button>
                 </div>
               ) : (
-                items.map((item) => (
+                items.map((item: any) => (
                   <motion.div 
                     layout
                     initial={{ opacity: 0, y: 20 }}

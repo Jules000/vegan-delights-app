@@ -629,7 +629,7 @@ export async function getMonthlyRevenueData() {
 
   // Convert to array and reverse to handle chronological order
   return Object.entries(monthlyData)
-    .map(([name, total]) => ({ name, total }))
+    .map(([name, total]: [string, any]) => ({ name, total }))
     .reverse();
 }
 

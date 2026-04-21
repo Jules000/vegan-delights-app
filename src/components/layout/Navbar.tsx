@@ -113,7 +113,7 @@ export default function Navbar({ session }: { session: any }) {
           className={`${isMobile ? 'relative mt-2' : 'absolute top-full left-0 right-0 mt-2'} z-50 bg-white/95 dark:bg-background-dark/95 backdrop-blur-xl border border-forest-green/10 dark:border-soft-cream/10 rounded-2xl shadow-2xl max-h-[400px] overflow-y-auto custom-scrollbar`}
         >
           <div className="p-3 space-y-2">
-            {searchResults.map((product) => (
+            {searchResults.map((product: any) => (
               <div key={product.id} className="flex items-center gap-3 p-2 hover:bg-forest-green/5 dark:hover:bg-soft-cream/5 rounded-xl transition-colors group">
                 <Link 
                   href={`/product/${slugify(locale === 'en' ? product.nameEn : product.nameFr)}`} 
@@ -170,7 +170,7 @@ export default function Navbar({ session }: { session: any }) {
               <h1 className="font-serif text-2xl font-black tracking-tight dark:text-white">Vegan Delights</h1>
             </Link>
             <nav className="hidden lg:flex items-center gap-10">
-              {navLinks.map((link) => {
+              {navLinks.map((link: any) => {
                 const isActive = pathname === link.href;
                 return (
                   <Link 
@@ -373,7 +373,7 @@ export default function Navbar({ session }: { session: any }) {
           </div>
 
           <div className="flex flex-col gap-6">
-            {navLinks.map((link) => (
+            {navLinks.map((link: any) => (
               <motion.div 
                 whileTap={{ scale: 0.95 }}
                 key={link.id}

@@ -79,7 +79,7 @@ export default function ProductListing({ type, initialData, subcategories }: Pro
       const subData: Record<string, SubcategoryData> = {};
       
       // Fetch initial batch (4 products) for each subcategory in parallel
-      await Promise.all(activeSubs.map(async (sub) => {
+      await Promise.all(activeSubs.map(async (sub: any) => {
         // If specific subcategories are selected in the filter, only fetch those
         if (subs.length > 0 && !subs.includes(sub.id)) return;
 
@@ -191,7 +191,7 @@ export default function ProductListing({ type, initialData, subcategories }: Pro
               {locale === 'en' ? 'Lifestyle' : 'Régime'}
             </h3>
             <div className="flex flex-col gap-2">
-              {CATEGORIES.map((cat) => (
+              {CATEGORIES.map((cat: any) => (
                 <button
                   key={cat.id}
                   onClick={() => handleCategoryChange(cat.id)}
@@ -298,7 +298,7 @@ export default function ProductListing({ type, initialData, subcategories }: Pro
               animate={{ opacity: 1, y: 0 }}
               className="space-y-32"
             >
-              {filteredSubcategories.map((sub) => {
+              {filteredSubcategories.map((sub: any) => {
                 const subData = dataBySub[sub.id];
                 if (!subData || subData.products.length === 0) return null;
 
