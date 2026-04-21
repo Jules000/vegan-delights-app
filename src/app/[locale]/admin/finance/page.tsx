@@ -7,7 +7,7 @@ export default async function AdminFinancePage() {
     getPaymentTransactions()
   ]);
 
-  const maxRevenue = Math.max(...chartData.map(d => d.total), 1);
+  const maxRevenue = Math.max(...chartData.map((d: any) => d.total), 1);
 
   return (
     <div className="space-y-8">
