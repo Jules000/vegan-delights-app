@@ -6,13 +6,13 @@ export default async function ShopPage() {
   const t = await getTranslations('Index');
   const subcategories = await getStoreSubcategories('SHOP');
   
-  // Fetch first 4 products for each subcategory to provide meaningful initial data
+  // Fetch first 6 products for each subcategory to provide meaningful initial data
   const productsBySub = await Promise.all(
     subcategories.map(async (sub) => {
       const result = await getAllStoreProducts({
         type: 'SHOP',
         subcategory: sub.id,
-        limit: 4
+        limit: 6
       });
       return { subId: sub.id, ...result };
     })

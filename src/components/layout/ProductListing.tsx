@@ -92,7 +92,7 @@ export default function ProductListing({ type, initialData, subcategories }: Pro
           subcategory: sub.id,
           isGlutenFree: gf,
           page: 1,
-          limit: 4
+          limit: 6
         });
 
         if (result.products.length > 0) {
@@ -159,7 +159,7 @@ export default function ProductListing({ type, initialData, subcategories }: Pro
         subcategory: subId,
         isGlutenFree,
         page: nextPage,
-        limit: 4
+        limit: 6
       });
 
       setDataBySub(prev => ({

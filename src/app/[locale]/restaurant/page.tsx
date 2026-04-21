@@ -6,13 +6,13 @@ export default async function RestaurantPage() {
   const t = await getTranslations('Index');
   const subcategories = await getStoreSubcategories('RESTAURANT');
   
-  // Fetch first 4 products for each subcategory
+  // Fetch first 6 products for each subcategory
   const productsBySub = await Promise.all(
     subcategories.map(async (sub) => {
       const result = await getAllStoreProducts({
         type: 'RESTAURANT',
         subcategory: sub.id,
-        limit: 4
+        limit: 6
       });
       return { subId: sub.id, ...result };
     })
