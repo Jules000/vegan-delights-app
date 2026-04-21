@@ -8,6 +8,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import "@/app/globals.css";
 import { getSession } from "@/app/actions/auth";
+import { headers } from "next/headers";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   variable: "--font-plus-jakarta-sans",
@@ -41,6 +42,10 @@ export default async function RootLayout({
   const messages = await getMessages();
   const session = await getSession();
 
+  const headersList = await headers();
+  const pathname = headersList.get("x-pathname") || "";
+  const isAdminPage = pathname.includes("/admin");
+
   return (
     <html
       lang={locale}
@@ -51,11 +56,11 @@ export default async function RootLayout({
       </head>
       <body className="min-h-full flex flex-col font-display bg-[#fdfaf6] dark:bg-[#102210] text-[#0d1b0d] dark:text-[#fdfaf6]">
         <NextIntlClientProvider locale={locale} messages={messages}>
-          <Navbar session={session} />
+          {!isAdminPage && <Navbar session={session} />}
           <main className="flex-1">
             {children}
           </main>
-          <Footer />
+          {!isAdminPage && <Footer />}
         </NextIntlClientProvider>
       </body>
     </html>

@@ -11,6 +11,9 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+// Gmail often requires the 'from' address to match the authenticated account
+const DEFAULT_FROM = `"Vegan Delights" <${process.env.EMAIL_USER}>`;
+
 // Helper for other parts of the app to send emails from different addresses
 export const SENDER_EMAILS = {
   verify: 'verify@vegandelights.store',
@@ -278,7 +281,7 @@ export async function sendOtpEmail(email: string, name: string, otp: string, loc
 
   try {
     await transporter.sendMail({
-      from: `"Vegan Delights" <${SENDER_EMAILS.verify}>`,
+      from: DEFAULT_FROM,
       to: email,
       subject,
       html,

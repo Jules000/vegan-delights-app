@@ -132,7 +132,8 @@ export async function registerUser(prevState: any, formData: FormData) {
     return { error: "Un compte avec cette adresse email existe déjà." };
   }
 
-  const existingByPhone = await prisma.customer.findUnique({ where: { phone } });
+  const existingByPhone = await prisma.customer.findFirst({ where: { phone } });
+
   if (existingByPhone) {
     return { error: "Ce numéro de téléphone est déjà utilisé." };
   }
@@ -202,9 +203,9 @@ export async function verifyOtp(prevState: any, formData: FormData) {
     }
   });
 
-  await setSession(updatedUser.id, updatedUser.email, updatedUser.name);
+  await setSession(updatedUser.id, updatedUser.email, updatedUser.name, updatedUser.role, false);
 
-  if (cleanPath.startsWith("/admin")) {
+  if (cleanPath.startsWith("/admin") || cleanPath.startsWith("/fr") || cleanPath.startsWith("/en")) {
     redirect(cleanPath);
   } else {
     redirect(`/${locale}${cleanPath}`);
@@ -267,9 +268,9 @@ export async function loginUser(prevState: any, formData: FormData) {
   const rawCallbackUrl = formData.get("callbackUrl") as string;
   const cleanPath = (rawCallbackUrl && rawCallbackUrl !== 'undefined' && rawCallbackUrl.startsWith('/')) ? rawCallbackUrl : "/";
   
-  await setSession(user.id, user.email, user.name);
+  await setSession(user.id, user.email, user.name, user.role, false);
 
-  if (cleanPath.startsWith("/admin")) {
+  if (cleanPath.startsWith("/admin") || cleanPath.startsWith("/fr") || cleanPath.startsWith("/en")) {
     redirect(cleanPath);
   } else {
     redirect(`/${locale}${cleanPath}`);
@@ -288,9 +289,9 @@ export async function logoutUser() {
   redirect("/");
 }
 
-async function setSession(id: string, email: string, name: string) {
+async function setSession(id: string, email: string, name: string, role: string, mfaVerified: boolean = false) {
   const cookieStore = await cookies();
-  const session = await encrypt({ id, email, name });
+  const session = await encrypt({ id, email, name, role, mfaVerified });
   const expires = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
   cookieStore.set("session", session, {
@@ -307,4 +308,57 @@ export async function getSession() {
   const session = cookieStore.get("session")?.value;
   if (!session) return null;
   return await decrypt(session);
+}
+
+export async function triggerAdminMfa() {
+  const session = await getSession();
+  if (!session || (session as any).role !== 'ADMIN') {
+    return { error: "Accès refusé" };
+  }
+
+  const email = (session as any).email;
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+  await prisma.customer.update({
+    where: { email },
+    data: { otp, otpExpires }
+  });
+
+  await sendOtpEmail(email, (session as any).name, otp, "fr"); // Could detect locale from headers if needed
+  return { success: true };
+}
+
+export async function verifyAdminMfa(prevState: any, formData: FormData) {
+  const otp = formData.get("otp") as string;
+  const session = await getSession();
+
+  if (!session || (session as any).role !== 'ADMIN') {
+    return { error: "Session invalide ou expirée." };
+  }
+
+  if (!otp) return { error: "Veuillez entrer le code." };
+
+  const user = await prisma.customer.findUnique({
+    where: { email: (session as any).email }
+  });
+
+  if (!user || user.otp !== otp) {
+    return { error: "Code de vérification incorrect." };
+  }
+
+  if (user.otpExpires && user.otpExpires < new Date()) {
+    return { error: "Ce code a expiré." };
+  }
+
+  // Success: Update DB and re-sign session
+  await prisma.customer.update({
+    where: { id: user.id },
+    data: { otp: null, otpExpires: null }
+  });
+
+  await setSession(user.id, user.email, user.name, user.role, true);
+
+  // Return success to trigger redirection on client
+  return { success: true };
 }
