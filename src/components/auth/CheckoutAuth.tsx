@@ -20,7 +20,7 @@ export default function CheckoutAuth() {
   const [clientError, setClientError] = useState('');
   const formRef = useRef<HTMLFormElement>(null);
   
-  const [loginState, loginAction, isLoginPending] = useActionState(loginUser as any, { error: '' });
+  const [loginState, loginAction, isLoginPending] = useActionState(loginUser as any, { error: '', showOtp: false, email: '' });
   const [registerState, registerAction, isRegisterPending] = useActionState(registerUser as any, { error: '', showOtp: false, email: '' });
 
   const isPasswordStrong = (pass: string) => {
