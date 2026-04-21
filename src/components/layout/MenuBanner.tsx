@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { Link } from '@/i18n/routing';
 import { useCartStore } from '@/store/cartStore';
 import { useState } from 'react';
+import { slugify } from '@/lib/slugify';
 
 export default function MenuBanner({ product }: { product: any }) {
   const locale = useLocale();
@@ -18,7 +19,7 @@ export default function MenuBanner({ product }: { product: any }) {
   const name = locale === 'en' ? product.nameEn : product.nameFr;
   const bannerText = locale === 'en' ? product.bannerTextEn : product.bannerTextFr;
   
-  const slug = name ? name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') : 'product';
+  const slug = slugify(name);
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();

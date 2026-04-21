@@ -63,6 +63,18 @@ export async function getAllStoreProducts(options: {
     where.isGlutenFree = true;
   }
 
+  // Strictly manage Menu of the Day visibility:
+  // Hide products that have a menuDay assigned UNLESS it's their designated day.
+  const currentDay = new Intl.DateTimeFormat('en-US', { 
+    timeZone: 'Africa/Douala', 
+    weekday: 'long' 
+  }).format(new Date()).toUpperCase();
+
+  where.OR = [
+    { menuDay: null },
+    { menuDay: currentDay as any }
+  ];
+
   const [products, total] = await Promise.all([
     prisma.product.findMany({
       where,
