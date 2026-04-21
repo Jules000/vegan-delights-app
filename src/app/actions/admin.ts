@@ -11,7 +11,7 @@ import { getSession } from "@/app/actions/auth";
 // Authorization helper to ensure deep security (defense-in-depth)
 async function ensureAdmin() {
   const session = await getSession();
-  if (!session || session.user.role !== "ADMIN" || !session.mfaVerified) {
+  if (!session || (session as any).role !== "ADMIN" || !(session as any).mfaVerified) {
     throw new Error("UNAUTHORIZED_ACCESS: Administrative privileges and MFA verification required.");
   }
   return session;
@@ -97,7 +97,7 @@ export async function createAdminProduct(prevState: any, formData: FormData) {
   // Image Upload Logic
   const imageFile = formData.get("image") as File;
   let imageUrl = "/placeholder.jpg"; // Default fallback
-
+  if (imageFile && imageFile.name && imageFile.size > 0) {
     // OWASP A04: Insecure Design - Validate MIME type and size
     const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
     if (!allowedTypes.includes(imageFile.type)) {
