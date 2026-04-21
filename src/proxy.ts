@@ -5,7 +5,7 @@ import { decrypt } from '@/lib/auth';
 
 const intlMiddleware = createMiddleware(routing);
 
-export async function middleware(request: any) {
+export async function proxy(request: any) {
   const { pathname } = request.nextUrl;
 
   // 1. Critical Fix for Next.js 16: Bypass proxy for Server Actions
