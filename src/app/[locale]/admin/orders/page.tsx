@@ -21,7 +21,7 @@ export default async function AdminOrdersPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-black/5">
-            {orders.map(order => (
+            {orders.map((order: any) => (
               <tr key={order.id} className="hover:bg-admin-cream/50 transition-colors">
                 <td className="px-6 py-4">
                   <p className="text-xs font-black text-admin-forest">{order.id.slice(0, 8)}</p>

@@ -26,7 +26,7 @@ export default async function AdminInvoicesPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-black/5">
-            {invoices.map(inv => (
+            {invoices.map((inv: any) => (
               <tr key={inv.id} className="hover:bg-admin-cream/50 transition-colors">
                 <td className="px-6 py-4">
                   <p className="text-sm font-black text-admin-forest">{inv.invoiceNumber}</p>

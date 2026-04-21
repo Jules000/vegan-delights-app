@@ -74,7 +74,7 @@ export default function AdminNewsletterPage() {
                 className="w-full bg-admin-cream border-transparent focus:ring-2 focus:ring-admin-primary rounded-xl px-4 py-4 text-sm font-bold appearance-none outline-none transition-all"
                 defaultValue="hello"
               >
-                {senders.map(s => (
+                {senders.map((s: any) => (
                   <option key={s.key} value={s.key}>{s.label}</option>
                 ))}
               </select>

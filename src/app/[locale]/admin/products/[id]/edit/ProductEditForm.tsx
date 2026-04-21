@@ -125,7 +125,7 @@ export default function ProductEditForm({ product, subcategories }: { product: a
               <label className="flex flex-col">
                 <p className="text-admin-forest/60 text-sm font-bold pb-2 uppercase tracking-wider">Sous-Catégorie</p>
                 <select name="subcategoryId" defaultValue={product.subcategoryId} className="w-full rounded-lg text-admin-forest border border-black/10 bg-admin-cream h-14 px-4 text-base font-normal outline-none focus:ring-2 focus:ring-admin-primary">
-                  {filteredSubcategories.map(sub => (
+                  {filteredSubcategories.map((sub: any) => (
                     <option key={sub.id} value={sub.id}>{sub.nameFr}</option>
                   ))}
                   {filteredSubcategories.length === 0 && (

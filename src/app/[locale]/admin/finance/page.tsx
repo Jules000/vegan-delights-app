@@ -148,7 +148,7 @@ export default async function AdminFinancePage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-black/5">
-              {transactions.map(tx => (
+              {transactions.map((tx: any) => (
                 <tr key={tx.id} className="hover:bg-admin-cream/30 transition-colors">
                   <td className="px-8 py-4">
                     <p className="text-xs font-black text-admin-forest">#{tx.id.slice(-6).toUpperCase()}</p>

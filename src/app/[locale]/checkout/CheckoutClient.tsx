@@ -166,7 +166,7 @@ export default function CheckoutClient({ session }: { session: any }) {
                   <input type="hidden" name="amount" value={total} />
                   <input type="hidden" name="deliveryFee" value={delivery} />
                   <input type="hidden" name="locale" value={locale} />
-                  <input type="hidden" name="cartItems" value={JSON.stringify(items.map(item => ({ id: item.id, quantity: item.quantity, price: item.price })))} />
+                  <input type="hidden" name="cartItems" value={JSON.stringify(items.map((item: any) => ({ id: item.id, quantity: item.quantity, price: item.price })))} />
                   
                   <button className="w-full bg-primary text-forest-green font-bold text-lg py-5 rounded-full mt-6 shadow-xl hover:brightness-110 active:scale-95 transition-all flex justify-center items-center gap-2">
                     <span className="material-symbols-outlined">lock</span> Payer {total.toLocaleString(locale)} FCFA
