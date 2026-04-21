@@ -1,15 +1,19 @@
-import { PrismaClient } from '@prisma/client'; // Refresh client types v7.7.0
+import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
 
+const prismaClientSingleton = () => {
+  const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+  const adapter = new PrismaPg(pool);
+  return new PrismaClient({ adapter });
+};
+
 declare global {
-  var prisma: PrismaClient | undefined;
+  var prismaGlobal: undefined | ReturnType<typeof prismaClientSingleton>;
 }
 
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-const adapter = new PrismaPg(pool);
-const prisma = global.prisma_v2 || new PrismaClient({ adapter });
-
-if (process.env.NODE_ENV !== 'production') global.prisma_v2 = prisma;
+const prisma = globalThis.prismaGlobal ?? prismaClientSingleton();
 
 export default prisma;
+
+if (process.env.NODE_ENV !== 'production') globalThis.prismaGlobal = prisma;
