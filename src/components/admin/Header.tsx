@@ -2,7 +2,7 @@ import { getSession } from "@/app/actions/auth";
 
 export default async function AdminHeader() {
   const session = await getSession();
-  const userName = session?.user?.name || "";
+  const userName = (session as any)?.name || "";
   const adminDisplayName = `Administrateur ${userName}`.trim();
 
   return (
