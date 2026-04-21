@@ -1,17 +1,50 @@
-'use client';
+"use client";
 
-import { useState, useActionState } from 'react';
+import { useState, useActionState, useRef } from 'react';
 import { loginUser, registerUser } from '@/app/actions/auth';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import OtpVerification from './OtpVerification';
+import PasswordStrengthMeter from './PasswordStrengthMeter';
 
 export default function CheckoutAuth() {
+  const t = useTranslations('Index');
   const locale = useLocale();
   const [mode, setMode] = useState<'login' | 'register'>('login');
+  const [showPassword, setShowPassword] = useState(false);
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [clientError, setClientError] = useState('');
+  const formRef = useRef<HTMLFormElement>(null);
   
   const [loginState, loginAction, isLoginPending] = useActionState(loginUser as any, { error: '' });
   const [registerState, registerAction, isRegisterPending] = useActionState(registerUser as any, { error: '', showOtp: false, email: '' });
+
+  const isPasswordStrong = (pass: string) => {
+    return pass.length >= 8 && 
+           /[A-Z]/.test(pass) && 
+           /[a-z]/.test(pass) && 
+           /[0-9]/.test(pass) && 
+           /[^A-Za-z0-9]/.test(pass);
+  };
+
+  const handleRegisterSubmit = (formData: FormData) => {
+    setClientError('');
+    const pass = formData.get('password') as string;
+    const confirm = formData.get('confirmPassword') as string;
+
+    if (!isPasswordStrong(pass)) {
+      setClientError(locale === 'en' ? 'Password is too weak' : 'Le mot de passe est trop faible');
+      return;
+    }
+
+    if (pass !== confirm) {
+      setClientError(locale === 'en' ? 'Passwords do not match' : 'Les mots de passe ne correspondent pas');
+      return;
+    }
+
+    registerAction(formData);
+  };
 
   // If register returns showOtp, we prioritize showing the OTP verification
   if (registerState?.showOtp || loginState?.showOtp) {
@@ -29,13 +62,13 @@ export default function CheckoutAuth() {
     <div className="bg-white dark:bg-forest-green/10 border border-forest-green/10 rounded-2xl p-8 shadow-sm">
       <div className="flex bg-forest-green/5 p-1.5 rounded-xl mb-8">
         <button 
-          onClick={() => setMode('login')}
+          onClick={() => { setMode('login'); setClientError(''); }}
           className={`flex-1 py-3 rounded-lg text-sm font-black transition-all ${mode === 'login' ? 'bg-white text-forest-green shadow-sm' : 'text-forest-green/40 hover:text-forest-green/60'}`}
         >
           {locale === 'en' ? 'Log In' : 'Connexion'}
         </button>
         <button 
-          onClick={() => setMode('register')}
+          onClick={() => { setMode('register'); setClientError(''); }}
           className={`flex-1 py-3 rounded-lg text-sm font-black transition-all ${mode === 'register' ? 'bg-white text-forest-green shadow-sm' : 'text-forest-green/40 hover:text-forest-green/60'}`}
         >
           {locale === 'en' ? 'Register' : 'Inscription'}
@@ -67,14 +100,22 @@ export default function CheckoutAuth() {
                 required 
               />
             </div>
-            <div className="space-y-1">
+            <div className="space-y-1 relative">
               <input 
                 name="password" 
                 className="w-full bg-white dark:bg-black/20 border border-forest-green/20 rounded-xl p-4 outline-none focus:ring-2 focus:ring-primary" 
                 placeholder={locale === 'en' ? 'Password' : 'Mot de passe'} 
-                type="password" 
+                type={showPassword ? "text" : "password"} 
                 required 
               />
+              <button 
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-forest-green/40 hover:text-forest-green transition-colors"
+                title={showPassword ? "Hide password" : "Show password"}
+              >
+                <span className="material-symbols-outlined">{showPassword ? 'visibility_off' : 'visibility'}</span>
+              </button>
             </div>
 
             {loginState?.error && (
@@ -96,7 +137,7 @@ export default function CheckoutAuth() {
             initial={{ opacity: 0, x: 10 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -10 }}
-            action={registerAction} 
+            action={handleRegisterSubmit} 
             className="space-y-4"
           >
             <h3 className="font-bold text-xl mb-2">
@@ -128,17 +169,41 @@ export default function CheckoutAuth() {
               type="email" 
               required 
             />
+            
+            <div className="space-y-1 relative">
+              <input 
+                name="password" 
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full bg-white dark:bg-black/20 border border-forest-green/20 rounded-xl p-4 outline-none focus:ring-2 focus:ring-primary" 
+                placeholder={locale === 'en' ? 'Password' : 'Mot de passe'} 
+                type={showPassword ? "text" : "password"} 
+                required 
+              />
+              <button 
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-forest-green/40 hover:text-forest-green transition-colors"
+              >
+                <span className="material-symbols-outlined">{showPassword ? 'visibility_off' : 'visibility'}</span>
+              </button>
+            </div>
+
+            <PasswordStrengthMeter password={password} />
+
             <input 
-              name="password" 
+              name="confirmPassword" 
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
               className="w-full bg-white dark:bg-black/20 border border-forest-green/20 rounded-xl p-4 outline-none focus:ring-2 focus:ring-primary" 
-              placeholder={locale === 'en' ? 'Password' : 'Mot de passe'} 
-              type="password" 
+              placeholder={locale === 'en' ? 'Confirm Password' : 'Confirmer le mot de passe'} 
+              type={showPassword ? "text" : "password"} 
               required 
             />
 
-            {registerState?.error && (
+            {(registerState?.error || clientError) && (
               <p className="text-red-500 text-sm font-bold text-center bg-red-50 p-2 rounded-lg border border-red-100">
-                {registerState.error}
+                {registerState?.error || clientError}
               </p>
             )}
 

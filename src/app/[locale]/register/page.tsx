@@ -1,21 +1,54 @@
 "use client";
 
 import { Link } from '@/i18n/routing';
-import { useActionState } from 'react';
+import { useActionState, useState } from 'react';
 import { registerUser } from '@/app/actions/auth';
 import { useSearchParams } from 'next/navigation';
 import { useLocale } from 'next-intl';
 import { motion, AnimatePresence } from 'framer-motion';
 import OtpVerification from '@/components/auth/OtpVerification';
+import PasswordStrengthMeter from '@/components/auth/PasswordStrengthMeter';
 
 const initialState = { error: '', showOtp: false, email: '' };
 
 export default function RegisterPage() {
-  const [state, formAction, isPending] = useActionState(registerUser as any, initialState);
   const locale = useLocale();
   const searchParams = useSearchParams();
   const rawCallbackUrl = searchParams.get('callbackUrl');
   const callbackUrl = (rawCallbackUrl && rawCallbackUrl !== 'undefined' && rawCallbackUrl !== 'null') ? rawCallbackUrl : '/';
+
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [clientError, setClientError] = useState('');
+
+  const [state, registerAction, isPending] = useActionState(registerUser as any, initialState);
+
+  const isPasswordStrong = (pass: string) => {
+    return pass.length >= 8 && 
+           /[A-Z]/.test(pass) && 
+           /[a-z]/.test(pass) && 
+           /[0-9]/.test(pass) && 
+           /[^A-Za-z0-9]/.test(pass);
+  };
+
+  const handleRegisterSubmit = (formData: FormData) => {
+    setClientError('');
+    const pass = formData.get('password') as string;
+    const confirm = formData.get('confirmPassword') as string;
+
+    if (!isPasswordStrong(pass)) {
+      setClientError(locale === 'en' ? 'Password is too weak' : 'Le mot de passe est trop faible');
+      return;
+    }
+
+    if (pass !== confirm) {
+      setClientError(locale === 'en' ? 'Passwords do not match' : 'Les mots de passe ne correspondent pas');
+      return;
+    }
+
+    registerAction(formData);
+  };
 
   return (
     <div className="min-h-[80vh] flex items-center justify-center p-6 relative">
@@ -47,13 +80,13 @@ export default function RegisterPage() {
                 </p>
               </div>
 
-              <form action={formAction} className="space-y-4 flex flex-col items-center">
+              <form action={handleRegisterSubmit} className="space-y-4 flex flex-col items-center">
                 <input type="hidden" name="callbackUrl" value={callbackUrl || ''} />
                 <input type="hidden" name="locale" value={locale} />
                 
-                {state?.error && (
+                {(state?.error || clientError) && (
                   <div className="w-full bg-red-100 text-red-600 p-3 rounded-lg text-sm text-center font-bold border border-red-200">
-                    {state.error}
+                    {state?.error || clientError}
                   </div>
                 )}
                 
@@ -104,12 +137,40 @@ export default function RegisterPage() {
                   <label htmlFor="password" className="text-sm font-bold text-forest-green dark:text-soft-cream ml-2">
                     {locale === 'en' ? 'Password' : 'Mot de passe'}
                   </label>
+                  <div className="relative">
+                    <input 
+                      id="password"
+                      name="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="w-full bg-white dark:bg-black/20 border border-forest-green/20 rounded-xl px-4 py-4 text-sm outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all placeholder:text-forest-green/40" 
+                      placeholder="••••••••" 
+                      type={showPassword ? "text" : "password"} 
+                      required 
+                    />
+                    <button 
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-forest-green/40 hover:text-forest-green transition-colors"
+                    >
+                      <span className="material-symbols-outlined">{showPassword ? 'visibility_off' : 'visibility'}</span>
+                    </button>
+                  </div>
+                  <PasswordStrengthMeter password={password} />
+                </div>
+
+                <div className="w-full space-y-1">
+                  <label htmlFor="confirmPassword" className="text-sm font-bold text-forest-green dark:text-soft-cream ml-2">
+                    {locale === 'en' ? 'Confirm Password' : 'Confirmer le mot de passe'}
+                  </label>
                   <input 
-                    id="password"
-                    name="password"
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
                     className="w-full bg-white dark:bg-black/20 border border-forest-green/20 rounded-xl px-4 py-4 text-sm outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all placeholder:text-forest-green/40" 
                     placeholder="••••••••" 
-                    type="password" 
+                    type={showPassword ? "text" : "password"} 
                     required 
                   />
                 </div>
