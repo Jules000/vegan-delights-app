@@ -19,7 +19,7 @@ export default async function AdminProductsPage() {
         </div>
       </div>
 
-      {products.some(p => p.stock < 5) && (
+      {products.some((p: any) => p.stock < 5) && (
         <div className="mb-6 p-4 bg-orange-100 border-l-4 border-orange-500 rounded-r-xl flex items-center gap-3">
           <span className="material-symbols-outlined text-orange-600">warning</span>
           <div>

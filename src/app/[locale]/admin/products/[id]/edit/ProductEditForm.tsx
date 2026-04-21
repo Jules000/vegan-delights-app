@@ -13,7 +13,7 @@ export default function ProductEditForm({ product, subcategories }: { product: a
   });
   const [productType, setProductType] = useState<'RESTAURANT' | 'SHOP'>(product.productType || 'SHOP');
 
-  const filteredSubcategories = subcategories.filter(s => s.productType === productType);
+  const filteredSubcategories = subcategories.filter((s: any) => s.productType === productType);
 
   const [isGlutenFree, setIsGlutenFree] = useState(product.isGlutenFree || false);
   const [menuDay, setMenuDay] = useState<string>(product.menuDay || "NONE");

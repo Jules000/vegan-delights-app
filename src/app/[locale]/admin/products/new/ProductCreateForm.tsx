@@ -8,7 +8,7 @@ export default function ProductCreateForm({ subcategories }: { subcategories: an
   const [previewInfo, setPreviewInfo] = useState<{url: string, name: string} | null>(null);
   const [productType, setProductType] = useState<'RESTAURANT' | 'SHOP'>('SHOP');
 
-  const filteredSubcategories = subcategories.filter(s => s.productType === productType);
+  const filteredSubcategories = subcategories.filter((s: any) => s.productType === productType);
 
   const [isGlutenFree, setIsGlutenFree] = useState(false);
   const [menuDay, setMenuDay] = useState<string>("NONE");
