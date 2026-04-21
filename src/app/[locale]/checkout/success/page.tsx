@@ -2,6 +2,7 @@ import CheckoutSuccessClient from "./CheckoutSuccessClient";
 import prisma from "@/lib/prisma";
 import { verifyTransactionStatus } from "@/app/actions/payment";
 import { redirect } from "next/navigation";
+import { sendInvoiceEmail } from "@/lib/email";
 
 export default async function CheckoutSuccessPage({
   params,
@@ -54,6 +55,13 @@ export default async function CheckoutSuccessPage({
             }
         });
         invoiceId = invoice.id;
+
+        // Trigger payment confirmation email
+        try {
+          await sendInvoiceEmail(invoice.id, locale);
+        } catch (emailError) {
+          console.error("Failed to trigger automated invoice email:", emailError);
+        }
       }
     }
   }
