@@ -1,10 +1,12 @@
 "use client";
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useActionState } from 'react';
 import { updateAdminProduct } from '@/app/actions/admin';
 
 export default function ProductEditForm({ product, subcategories }: { product: any, subcategories: any[] }) {
+  const [state, formAction, isPending] = useActionState(updateAdminProduct as any, { success: false, error: '' });
+
   const [previewInfo, setPreviewInfo] = useState<{url: string, name: string} | null>({
     url: product.image,
     name: "Image Actuelle"
@@ -39,10 +41,17 @@ export default function ProductEditForm({ product, subcategories }: { product: a
   };
 
   return (
-    <form action={updateAdminProduct}>
+    <form action={formAction}>
       <input type="hidden" name="id" value={product.id} />
       <input type="hidden" name="isGlutenFree" value={isGlutenFree ? "true" : "false"} />
       <input type="hidden" name="menuDay" value={menuDay} />
+
+      {state?.error && (
+        <div className="mb-6 bg-red-50 border border-red-100 text-red-600 p-4 rounded-xl text-sm font-bold flex items-center justify-center gap-2">
+          <span className="material-symbols-outlined">error</span>
+          <span>{state.error}</span>
+        </div>
+      )}
 
       <div className="flex flex-wrap justify-between items-center gap-3 mb-8">
         <div className="flex flex-col gap-1">
@@ -301,9 +310,13 @@ export default function ProductEditForm({ product, subcategories }: { product: a
             <Link href="/admin/products" className="px-8 py-3 rounded-xl border border-black/10 text-admin-forest font-bold hover:bg-gray-50 transition-all flex items-center justify-center">
               Annuler
             </Link>
-            <button type="submit" className="px-10 py-3 rounded-xl bg-admin-primary text-white font-bold shadow-xl shadow-admin-primary/30 hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-2">
-              <span className="material-symbols-outlined">save</span>
-              Mettre à jour
+            <button disabled={isPending} type="submit" className="px-10 py-3 rounded-xl bg-admin-primary text-white font-bold shadow-xl shadow-admin-primary/30 hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50">
+              {isPending ? (
+                 <div className="size-5 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+              ) : (
+                <span className="material-symbols-outlined">save</span>
+              )}
+              {isPending ? 'Enregistrement...' : 'Mettre à jour'}
             </button>
           </div>
         </div>

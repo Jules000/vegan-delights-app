@@ -197,7 +197,7 @@ export async function createAdminProduct(prevState: any, formData: FormData) {
   redirect("/admin/products");
 }
 
-export async function updateAdminProduct(formData: FormData) {
+export async function updateAdminProduct(prevState: any, formData: FormData) {
   await ensureAdmin();
   const id = formData.get("id") as string;
   if (!id) return;
@@ -290,7 +290,7 @@ export async function updateAdminProduct(formData: FormData) {
     revalidatePath("/admin/products");
   } catch (error) {
     console.error("UPDATE_ADMIN_PRODUCT_ERROR:", error);
-    throw error;
+    return { success: false, error: error instanceof Error ? error.message : "Erreur inconnue" };
   }
 
   redirect("/admin/products");
