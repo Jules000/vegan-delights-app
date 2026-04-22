@@ -22,6 +22,10 @@ const getTranzakConfig = () => {
     : process.env.TRANZAK_SANDBOX_APP_KEY;
 
   if (!appId || !appKey) {
+    if (process.env.NEXT_PHASE === 'phase-production-build') {
+      console.warn("Tranzak API credentials missing during build phase. Using placeholder config.");
+      return { appId: "BUILD_PLACEHOLDER", appKey: "BUILD_PLACEHOLDER", mode };
+    }
     throw new Error(
       `CRITICAL: Tranzak API credentials missing for mode [${mode}]. ` +
       `Please check TRANZAK_${isLive ? 'LIVE' : 'SANDBOX'}_APP_ID and APP_KEY in your .env file.`

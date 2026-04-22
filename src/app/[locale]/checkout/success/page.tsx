@@ -4,6 +4,8 @@ import { verifyTransactionStatus } from "@/app/actions/payment";
 import { redirect } from "next/navigation";
 import { sendInvoiceEmail } from "@/lib/email";
 
+export const dynamic = 'force-dynamic';
+
 export default async function CheckoutSuccessPage({
   params,
   searchParams,
