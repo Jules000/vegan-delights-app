@@ -114,32 +114,70 @@ export default function Navbar({ session }: { session: any }) {
         >
           <div className="p-3 space-y-2">
             {searchResults.map((product: any) => (
-              <div key={product.id} className="flex items-center gap-3 p-2 hover:bg-forest-green/5 dark:hover:bg-soft-cream/5 rounded-xl transition-colors group">
-                <Link 
-                  href={`/product/${slugify(locale === 'en' ? product.nameEn : product.nameFr)}`} 
-                  onClick={() => {
-                    setShowResults(false);
-                    setIsMenuOpen(false);
-                    setSearchQuery('');
-                  }}
-                  className="flex-1 flex items-center gap-3 cursor-pointer"
-                >
-                  <div className="size-12 rounded-lg bg-cover bg-center border border-forest-green/5" style={{ backgroundImage: `url(${product.image})` }} />
-                  <div className="flex-1 min-w-0">
-                    <h4 className="font-bold text-sm truncate">{locale === 'en' ? product.nameEn : product.nameFr}</h4>
-                    <p className="text-xs text-forest-green/60 dark:text-soft-cream/60">{product.price.toLocaleString(locale)} FCFA</p>
+              <div 
+                key={product.id} 
+                className="flex items-center gap-3 p-2 hover:bg-forest-green/5 dark:hover:bg-soft-cream/5 rounded-xl transition-colors group"
+              >
+                {isMobile ? (
+                  <div 
+                    onClick={() => {
+                      addToCart(product);
+                      openCart();
+                      setShowResults(false);
+                      setIsMenuOpen(false);
+                      setSearchQuery('');
+                    }}
+                    className="flex-1 flex items-center gap-3 cursor-pointer"
+                  >
+                    <div className="size-12 rounded-lg bg-cover bg-center border border-forest-green/5" style={{ backgroundImage: `url(${product.image})` }} />
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-bold text-sm truncate">{locale === 'en' ? product.nameEn : product.nameFr}</h4>
+                      <p className="text-xs text-forest-green/60 dark:text-soft-cream/60">{product.price.toLocaleString(locale)} FCFA</p>
+                    </div>
                   </div>
-                </Link>
-                <button 
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    addToCart(product);
-                  }}
-                  className="size-10 shrink-0 bg-primary/10 text-primary hover:bg-primary hover:text-white rounded-full flex items-center justify-center transition-all active:scale-90"
-                >
-                  <span className="material-symbols-outlined text-xl">shopping_bag</span>
-                </button>
+                ) : (
+                  <Link 
+                    href={`/product/${slugify(locale === 'en' ? product.nameEn : product.nameFr)}`} 
+                    onClick={() => {
+                      setShowResults(false);
+                      setIsMenuOpen(false);
+                      setSearchQuery('');
+                    }}
+                    className="flex-1 flex items-center gap-3 cursor-pointer"
+                  >
+                    <div className="size-12 rounded-lg bg-cover bg-center border border-forest-green/5" style={{ backgroundImage: `url(${product.image})` }} />
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-bold text-sm truncate">{locale === 'en' ? product.nameEn : product.nameFr}</h4>
+                      <p className="text-xs text-forest-green/60 dark:text-soft-cream/60">{product.price.toLocaleString(locale)} FCFA</p>
+                    </div>
+                  </Link>
+                )}
+
+                {isMobile ? (
+                  <button 
+                    onClick={() => {
+                      addToCart(product);
+                      openCart();
+                      setShowResults(false);
+                      setIsMenuOpen(false);
+                      setSearchQuery('');
+                    }}
+                    className="size-10 shrink-0 bg-primary/10 text-primary hover:bg-primary hover:text-white rounded-full flex items-center justify-center transition-all active:scale-90"
+                  >
+                    <span className="material-symbols-outlined text-xl">add_shopping_cart</span>
+                  </button>
+                ) : (
+                  <button 
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      addToCart(product);
+                    }}
+                    className="size-10 shrink-0 bg-primary/10 text-primary hover:bg-primary hover:text-white rounded-full flex items-center justify-center transition-all active:scale-90"
+                  >
+                    <span className="material-symbols-outlined text-xl">shopping_bag</span>
+                  </button>
+                )}
               </div>
             ))}
           </div>
