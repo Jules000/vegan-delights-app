@@ -69,16 +69,16 @@ export default function CheckoutAuth() {
 
   return (
     <div className="bg-white dark:bg-forest-green/10 border border-forest-green/10 rounded-2xl p-8 shadow-sm">
-      <div className="flex bg-forest-green/5 p-1.5 rounded-xl mb-8">
+      <div className="flex bg-forest-green/5 dark:bg-soft-cream/5 p-1.5 rounded-xl mb-8">
         <button 
           onClick={() => { setMode('login'); setClientError(''); }}
-          className={`flex-1 py-3 rounded-lg text-sm font-black transition-all ${mode === 'login' ? 'bg-white text-forest-green shadow-sm' : 'text-forest-green/40 hover:text-forest-green/60'}`}
+          className={`flex-1 py-3 rounded-lg text-sm font-black transition-all ${mode === 'login' ? 'bg-white dark:bg-forest-green/90 text-forest-green dark:text-soft-cream shadow-sm' : 'text-forest-green/40 dark:text-soft-cream/40 hover:text-forest-green/60 dark:hover:text-soft-cream/60'}`}
         >
           {locale === 'en' ? 'Log In' : 'Connexion'}
         </button>
         <button 
           onClick={() => { setMode('register'); setClientError(''); }}
-          className={`flex-1 py-3 rounded-lg text-sm font-black transition-all ${mode === 'register' ? 'bg-white text-forest-green shadow-sm' : 'text-forest-green/40 hover:text-forest-green/60'}`}
+          className={`flex-1 py-3 rounded-lg text-sm font-black transition-all ${mode === 'register' ? 'bg-white dark:bg-forest-green/90 text-forest-green dark:text-soft-cream shadow-sm' : 'text-forest-green/40 dark:text-soft-cream/40 hover:text-forest-green/60 dark:hover:text-soft-cream/60'}`}
         >
           {locale === 'en' ? 'Register' : 'Inscription'}
         </button>
@@ -94,7 +94,7 @@ export default function CheckoutAuth() {
             action={loginAction} 
             className="space-y-4"
           >
-            <h3 className="font-bold text-xl mb-2">
+            <h3 className="font-bold text-xl mb-2 dark:text-soft-cream">
               {locale === 'en' ? 'Welcome back' : 'Bon retour parmi nous'}
             </h3>
             <input type="hidden" name="locale" value={locale} />
@@ -149,7 +149,7 @@ export default function CheckoutAuth() {
             action={handleRegisterSubmit} 
             className="space-y-4"
           >
-            <h3 className="font-bold text-xl mb-2">
+            <h3 className="font-bold text-xl mb-2 dark:text-soft-cream">
               {locale === 'en' ? 'Create an account' : 'Créer un compte'}
             </h3>
             <input type="hidden" name="locale" value={locale} />

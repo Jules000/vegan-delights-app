@@ -88,8 +88,8 @@ export default function CheckoutClient({ session }: { session: any }) {
           {/* Order Summary */}
           <div className="lg:col-span-7 bg-white dark:bg-forest-green/10 rounded-2xl p-8 border border-forest-green/10 shadow-sm flex flex-col h-full">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="font-bold text-2xl">{locale === 'en' ? 'Your Order' : 'Votre Commande'}</h2>
-              <span className="text-sm font-bold bg-forest-green/5 text-forest-green px-3 py-1 rounded-full">{items.length} {locale === 'en' ? 'items' : 'articles'}</span>
+              <h2 className="font-bold text-2xl dark:text-soft-cream">{locale === 'en' ? 'Your Order' : 'Votre Commande'}</h2>
+              <span className="text-sm font-bold bg-forest-green/5 dark:bg-soft-cream/10 text-forest-green dark:text-soft-cream px-3 py-1 rounded-full">{items.length} {locale === 'en' ? 'items' : 'articles'}</span>
             </div>
             
             <div className="space-y-6 mb-8 flex-1 overflow-y-auto pr-2">
@@ -103,33 +103,33 @@ export default function CheckoutClient({ session }: { session: any }) {
                       {locale === 'en' ? item.nameEn : item.nameFr}
                     </Link>
                     <div className="flex items-center gap-4 mt-2">
-                      <div className="flex items-center border border-forest-green/20 rounded-lg overflow-hidden h-8">
-                        <button onClick={() => updateQuantity(item.id, item.quantity - 1)} className="px-3 hover:bg-forest-green/5 transition-colors font-bold">-</button>
-                        <span className="w-8 text-center text-sm font-bold">{item.quantity}</span>
-                        <button onClick={() => updateQuantity(item.id, item.quantity + 1)} className="px-3 hover:bg-forest-green/5 transition-colors font-bold">+</button>
+                      <div className="flex items-center border border-forest-green/20 rounded-lg overflow-hidden h-8 dark:border-soft-cream/20">
+                        <button onClick={() => updateQuantity(item.id, item.quantity - 1)} className="px-3 hover:bg-forest-green/5 dark:hover:bg-soft-cream/5 transition-colors font-bold text-forest-green dark:text-soft-cream">-</button>
+                        <span className="w-8 text-center text-sm font-bold text-forest-green dark:text-soft-cream">{item.quantity}</span>
+                        <button onClick={() => updateQuantity(item.id, item.quantity + 1)} className="px-3 hover:bg-forest-green/5 dark:hover:bg-soft-cream/5 transition-colors font-bold text-forest-green dark:text-soft-cream">+</button>
                       </div>
                       <button onClick={() => removeFromCart(item.id)} className="text-xs text-terracotta hover:underline font-bold">
                         {locale === 'en' ? 'Remove' : 'Retirer'}
                       </button>
                     </div>
                   </div>
-                  <p className="font-bold text-lg whitespace-nowrap">{(item.price * item.quantity).toLocaleString(locale)} FCFA</p>
+                  <p className="font-bold text-lg whitespace-nowrap dark:text-soft-cream">{(item.price * item.quantity).toLocaleString(locale)} FCFA</p>
                 </div>
               ))}
             </div>
 
-            <div className="border-t border-forest-green/10 pt-6 space-y-3 mt-auto">
-              <div className="flex justify-between text-forest-green/70">
-                <p>Sous-total</p>
-                <p className="font-medium">{subtotal.toLocaleString(locale)} FCFA</p>
+            <div className="border-t border-forest-green/10 dark:border-soft-cream/10 pt-6 space-y-3 mt-auto">
+              <div className="flex justify-between text-forest-green/70 dark:text-soft-cream/70">
+                <p>{locale === 'en' ? 'Subtotal' : 'Sous-total'}</p>
+                <p className="font-medium">{(subtotal).toLocaleString(locale)} FCFA</p>
               </div>
-              <div className="flex justify-between text-forest-green/70">
-                <p>Livraison (Eco-friendly)</p>
+              <div className="flex justify-between text-forest-green/70 dark:text-soft-cream/70">
+                <p>{locale === 'en' ? 'Delivery (Eco-friendly)' : 'Livraison (Eco-friendly)'}</p>
                 <p className={`font-black ${delivery === 0 ? 'text-primary' : ''}`}>
                   {delivery === 0 ? (locale === 'en' ? 'FREE' : 'GRATUIT') : `${delivery.toLocaleString(locale)} FCFA`}
                 </p>
               </div>
-              <div className="flex justify-between font-black text-2xl mt-4 pt-4 border-t border-forest-green/10">
+              <div className="flex justify-between font-black text-2xl mt-4 pt-4 border-t border-forest-green/10 dark:border-soft-cream/10 dark:text-soft-cream">
                 <p>Total</p>
                 <p className="text-primary">{total.toLocaleString(locale)} FCFA</p>
               </div>
@@ -139,7 +139,19 @@ export default function CheckoutClient({ session }: { session: any }) {
           {/* Payment Form / Auth Prompt */}
           <div className="lg:col-span-5 relative">
             <div className="sticky top-28 space-y-6">
-              <h2 className="font-bold text-2xl mb-2">Informations de livraison</h2>
+              <h2 className="font-bold text-2xl mb-2 dark:text-soft-cream">
+                {!session 
+                  ? (locale === 'en' ? 'Authentication Required' : 'Authentification requise') 
+                  : (locale === 'en' ? 'Delivery Information' : 'Informations de livraison')}
+              </h2>
+              
+              {!session && (
+                <p className="text-sm text-forest-green/60 dark:text-soft-cream/60 -mt-4 mb-4">
+                  {locale === 'en' 
+                    ? 'Please log in or create an account to finalize your order securely.' 
+                    : 'Veuillez vous connecter ou créer un compte pour finaliser votre commande en toute sécurité.'}
+                </p>
+              )}
               
               {!session ? (
                 <CheckoutAuth />
