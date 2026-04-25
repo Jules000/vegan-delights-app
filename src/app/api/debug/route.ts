@@ -186,7 +186,7 @@ ALTER TABLE "Invoice" ADD CONSTRAINT "Invoice_orderId_fkey" FOREIGN KEY ("orderI
     const queries = sqlScript
       .split(';')
       .map(q => q.trim())
-      .filter(q => q.length > 0 && !q.startsWith('--'));
+      .filter(q => q.length > 0);
 
     let executionResults = [];
     
