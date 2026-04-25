@@ -55,7 +55,7 @@ export async function GET() {
 
     let subOutput = "";
     for (const sub of localData.subcategories) {
-      await prisma.subcategory.create({ data: sub });
+      await prisma.subcategory.create({ data: sub as any });
       subOutput += `${sub.slug} `;
     }
 
