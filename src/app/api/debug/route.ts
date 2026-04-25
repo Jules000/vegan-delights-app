@@ -218,31 +218,38 @@ ALTER TABLE "Invoice" ADD CONSTRAINT "Invoice_orderId_fkey" FOREIGN KEY ("orderI
     ];
 
     let seedOutput = "";
-    for (const sub of initialSubcategories) {
-      const created = await prisma.subcategory.upsert({
-        where: { slug: sub.slug },
-        update: {},
-        create: {
-          slug: sub.slug,
-          nameFr: sub.nameFr,
-          nameEn: sub.nameEn,
-          productType: sub.productType as any,
-          order: sub.order,
-        },
-      });
-      seedOutput += `Subcategory ${created.slug} created/found. `;
+    let seedError = null;
+
+    try {
+      for (const sub of initialSubcategories) {
+        const created = await prisma.subcategory.upsert({
+          where: { slug: sub.slug },
+          update: {},
+          create: {
+            slug: sub.slug,
+            nameFr: sub.nameFr,
+            nameEn: sub.nameEn,
+            productType: sub.productType as any,
+            order: sub.order,
+          },
+        });
+        seedOutput += `Subcategory ${created.slug} created/found. `;
+      }
+    } catch (e: any) {
+      seedError = e.message || String(e);
     }
     
     return NextResponse.json({
-      status: "success",
-      message: "Database raw SQL schema and seed pushed successfully!",
+      status: seedError ? "partial_success" : "success",
+      message: seedError ? "Schema pushed but seeding failed" : "Database raw SQL schema and seed pushed successfully!",
       executionResults,
-      seedOutput
+      seedOutput,
+      seedError
     });
   } catch (error: any) {
     return NextResponse.json({
       status: "error",
-      message: "Internal execution failed on raw SQL",
+      message: "Internal execution failed completely",
       error: error.message || String(error),
     }, { status: 500 });
   }
