@@ -3,7 +3,19 @@ import { Pool } from "pg";
 import { PrismaClient } from "../generated/client";
 
 const prismaClientSingleton = () => {
-  const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+  const connectionString = process.env.DATABASE_URL;
+  
+  if (connectionString?.startsWith("prisma://")) {
+    return new PrismaClient({ accelerateUrl: connectionString });
+  }
+
+  const pool = new Pool({
+    connectionString,
+    // Provide SSL config when deployed to production to avoid connection rejections from managed DBs
+    ssl: process.env.NODE_ENV === "production" && !connectionString?.includes("localhost") 
+      ? { rejectUnauthorized: false } 
+      : undefined
+  });
   const adapter = new PrismaPg(pool);
   return new PrismaClient({ adapter });
 };
