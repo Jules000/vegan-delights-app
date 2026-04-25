@@ -4,11 +4,13 @@ import prisma from "@/lib/prisma";
 
 export async function GET() {
   try {
-    // Run prisma db push directly from Vercel's runtime
-    const pushOutput = execSync("npx prisma db push --accept-data-loss", {
+    // Run local prisma binary directly to bypass Vercel read-only restrictions
+    const pushOutput = execSync("node ./node_modules/prisma/build/index.js db push --accept-data-loss", {
       env: {
         ...process.env,
-        // Ensure Prisma uses the correct client setup if required
+        HOME: "/tmp",
+        npm_config_cache: "/tmp/.npm",
+        PRISMA_CLI_BINARY_TARGETS: "debian-openssl-1.1.x,rhel-openssl-3.0.x"
       }
     }).toString();
 
