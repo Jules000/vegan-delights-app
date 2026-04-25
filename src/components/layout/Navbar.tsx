@@ -85,7 +85,10 @@ export default function Navbar({ session }: { session: any }) {
   // Close results and filter when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+      const isOutsideDesktop = !searchRef.current || !searchRef.current.contains(event.target as Node);
+      const isOutsideMobile = !mobileSearchRef.current || !mobileSearchRef.current.contains(event.target as Node);
+      
+      if (isOutsideDesktop && isOutsideMobile) {
         setShowResults(false);
         setIsFilterOpen(false);
       }
