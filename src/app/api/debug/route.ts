@@ -1,31 +1,59 @@
 import { NextResponse } from "next/server";
+import { execSync } from "child_process";
 import prisma from "@/lib/prisma";
 
 export async function GET() {
   try {
-    // Try a simple query to check database connection
-    const productCount = await prisma.product.count();
+    // Run prisma db push directly from Vercel's runtime
+    const pushOutput = execSync("npx prisma db push --accept-data-loss", {
+      env: {
+        ...process.env,
+        // Ensure Prisma uses the correct client setup if required
+      }
+    }).toString();
+
+    // Seed subcategories directly after schema creation
+    const initialSubcategories = [
+      { slug: 'DAILY_MENU', nameFr: 'Le Menu du Jour', nameEn: 'Daily Menu', productType: 'RESTAURANT', order: 1 },
+      { slug: 'HOT_DISHES', nameFr: 'Plats Chauds', nameEn: 'Hot Dishes', productType: 'RESTAURANT', order: 2 },
+      { slug: 'SALADS_WRAPS', nameFr: 'Salades et Wraps', nameEn: 'Salads & Wraps', productType: 'RESTAURANT', order: 3 },
+      { slug: 'SIDES', nameFr: 'Accompagnement', nameEn: 'Sides', productType: 'RESTAURANT', order: 4 },
+      { slug: 'DESSERTS_DRINKS', nameFr: 'Desserts & Boissons', nameEn: 'Desserts & Drinks', productType: 'RESTAURANT', order: 5 },
+      { slug: 'VEGAN_BUTCHERY', nameFr: 'Boucherie Vegan & Végétarienne', nameEn: 'Vegan Butchery', productType: 'SHOP', order: 1 },
+      { slug: 'PANTRY', nameFr: 'Épicerie (Pantry)', nameEn: 'Pantry', productType: 'SHOP', order: 2 },
+      { slug: 'SNACKING', nameFr: 'Snacking', nameEn: 'Snacking', productType: 'SHOP', order: 3 },
+      { slug: 'LIFESTYLE_HEALTH', nameFr: 'Lifestyle & Health', nameEn: 'Lifestyle & Health', productType: 'SHOP', order: 4 },
+    ];
+
+    let seedOutput = "";
+    for (const sub of initialSubcategories) {
+      const created = await prisma.subcategory.upsert({
+        where: { slug: sub.slug },
+        update: {},
+        create: {
+          slug: sub.slug,
+          nameFr: sub.nameFr,
+          nameEn: sub.nameEn,
+          productType: sub.productType as any,
+          order: sub.order,
+        },
+      });
+      seedOutput += `Subcategory ${created.slug} created/found. `;
+    }
+    
     return NextResponse.json({
       status: "success",
-      message: "Database connection is working!",
-      data: { productCount },
-      env: {
-        NODE_ENV: process.env.NODE_ENV,
-        HAS_DATABASE_URL: !!process.env.DATABASE_URL,
-        DATABASE_URL_PREFIX: process.env.DATABASE_URL ? process.env.DATABASE_URL.split(':')[0] : "none"
-      }
+      message: "Database schema and seed pushed successfully!",
+      pushOutput,
+      seedOutput
     });
   } catch (error: any) {
     return NextResponse.json({
       status: "error",
-      message: "Database connection failed",
+      message: "Internal execution failed",
       error: error.message || String(error),
-      stack: error.stack,
-      env: {
-        NODE_ENV: process.env.NODE_ENV,
-        HAS_DATABASE_URL: !!process.env.DATABASE_URL,
-        DATABASE_URL_PREFIX: process.env.DATABASE_URL ? process.env.DATABASE_URL.split(':')[0] : "none"
-      }
+      stdout: error.stdout?.toString(),
+      stderr: error.stderr?.toString()
     }, { status: 500 });
   }
 }
