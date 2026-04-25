@@ -308,10 +308,10 @@ export default function Navbar({ session }: { session: any }) {
             
             <button 
               onClick={toggleTheme} 
-              className="p-2 hover:bg-primary/10 rounded-full transition-colors flex items-center justify-center text-forest-green dark:text-soft-cream"
+              className="p-2 bg-forest-green/5 dark:bg-soft-cream/10 border border-forest-green/10 dark:border-soft-cream/10 hover:bg-primary/20 dark:hover:bg-primary/20 rounded-full transition-colors flex items-center justify-center text-forest-green dark:text-soft-cream size-9"
               title={theme === 'light' ? 'Passer en mode sombre' : 'Passer en mode clair'}
             >
-              <span className="material-symbols-outlined">
+              <span className="material-symbols-outlined text-[20px]">
                 {theme === 'light' ? 'dark_mode' : 'light_mode'}
               </span>
             </button>

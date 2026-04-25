@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Enforce Class-based Dark Mode Strategy for Tailwind CSS v4 */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme inline {
   --color-primary: #13ec13;
   --color-forest-green: #0d1b0d;
