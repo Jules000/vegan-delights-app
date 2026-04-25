@@ -98,3 +98,50 @@
 .phone-input-container {
   @apply w-full bg-white dark:bg-black/20 border border-forest-green/20 rounded-xl px-4 py-3 text-sm focus-within:ring-2 focus-within:ring-primary focus-within:border-transparent transition-all;
 }
+
+/* Global Dark Mode Text Overrides */
+.dark .text-forest-green {
+  color: var(--color-soft-cream) !important;
+}
+.dark .text-forest-green\/90 {
+  color: rgba(253, 250, 246, 0.9) !important;
+}
+.dark .text-forest-green\/80 {
+  color: rgba(253, 250, 246, 0.8) !important;
+}
+.dark .text-forest-green\/70 {
+  color: rgba(253, 250, 246, 0.7) !important;
+}
+.dark .text-forest-green\/60 {
+  color: rgba(253, 250, 246, 0.6) !important;
+}
+.dark .text-forest-green\/50 {
+  color: rgba(253, 250, 246, 0.5) !important;
+}
+.dark .text-forest-green\/40 {
+  color: rgba(253, 250, 246, 0.4) !important;
+}
+.dark .text-forest-green\/20 {
+  color: rgba(253, 250, 246, 0.2) !important;
+}
+.dark .text-black {
+  color: var(--color-soft-cream) !important;
+}
+.dark .text-gray-900 {
+  color: var(--color-soft-cream) !important;
+}
+.dark .text-gray-800 {
+  color: rgba(253, 250, 246, 0.9) !important;
+}
+.dark .text-gray-700 {
+  color: rgba(253, 250, 246, 0.8) !important;
+}
+.dark .text-slate-900 {
+  color: var(--color-soft-cream) !important;
+}
+.dark .text-slate-800 {
+  color: rgba(253, 250, 246, 0.9) !important;
+}
+.dark .text-slate-700 {
+  color: rgba(253, 250, 246, 0.8) !important;
+}

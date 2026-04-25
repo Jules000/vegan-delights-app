@@ -53,6 +53,15 @@ export default async function RootLayout({
     >
       <head>
         <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+        <script dangerouslySetInnerHTML={{ __html: `
+          try {
+            if (localStorage.theme === 'dark') {
+              document.documentElement.classList.add('dark');
+            } else {
+              document.documentElement.classList.remove('dark');
+            }
+          } catch (_) {}
+        ` }} />
       </head>
       <body className="min-h-full flex flex-col font-display bg-[#fdfaf6] dark:bg-[#102210] text-[#0d1b0d] dark:text-[#fdfaf6]">
         <NextIntlClientProvider locale={locale} messages={messages}>

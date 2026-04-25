@@ -43,6 +43,30 @@ export default function Navbar({ session }: { session: any }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUserMenuHovered, setIsUserMenuHovered] = useState(false);
   
+  // Theme State
+  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+
+  useEffect(() => {
+    const currentTheme = localStorage.getItem('theme') === 'dark' ? 'dark' : 'light';
+    setTheme(currentTheme);
+    if (currentTheme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, []);
+
+  const toggleTheme = () => {
+    const newTheme = theme === 'light' ? 'dark' : 'light';
+    setTheme(newTheme);
+    localStorage.setItem('theme', newTheme);
+    if (newTheme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  };
+  
   // Search State
   const [searchQuery, setSearchQuery] = useState('');
   const [searchType, setSearchType] = useState<'RESTAURANT' | 'SHOP'>('RESTAURANT');
@@ -282,6 +306,16 @@ export default function Navbar({ session }: { session: any }) {
               <SearchDropdown />
             </div>
             
+            <button 
+              onClick={toggleTheme} 
+              className="p-2 hover:bg-primary/10 rounded-full transition-colors flex items-center justify-center text-forest-green dark:text-soft-cream"
+              title={theme === 'light' ? 'Passer en mode sombre' : 'Passer en mode clair'}
+            >
+              <span className="material-symbols-outlined">
+                {theme === 'light' ? 'dark_mode' : 'light_mode'}
+              </span>
+            </button>
+
             <button onClick={handleLanguageChange} className="hidden sm:flex p-2 hover:bg-primary/10 rounded-full transition-colors items-center font-bold text-xs uppercase">
               {locale === 'en' ? 'FR' : 'EN'}
             </button>
@@ -431,6 +465,19 @@ export default function Navbar({ session }: { session: any }) {
           </div>
 
           <div className="mt-8 pt-8 border-t border-forest-green/10 dark:border-soft-cream/10 space-y-6">
+            <div className="flex items-center justify-between">
+              <span className="font-bold text-forest-green/40 dark:text-soft-cream/40 uppercase tracking-widest text-sm">{locale === 'en' ? 'Appearance' : 'Apparence'}</span>
+              <button 
+                onClick={toggleTheme} 
+                className="px-6 py-2 bg-forest-green/5 dark:bg-soft-cream/5 border border-forest-green/10 dark:border-soft-cream/10 text-forest-green dark:text-soft-cream rounded-full font-black flex items-center gap-2"
+              >
+                <span className="material-symbols-outlined text-sm">
+                  {theme === 'light' ? 'dark_mode' : 'light_mode'}
+                </span>
+                {theme === 'light' ? (locale === 'en' ? 'Dark Mode' : 'Mode Sombre') : (locale === 'en' ? 'Light Mode' : 'Mode Clair')}
+              </button>
+            </div>
+
             <div className="flex items-center justify-between">
               <span className="font-bold text-forest-green/40 dark:text-soft-cream/40 uppercase tracking-widest text-sm">Language</span>
               <button 
