@@ -196,12 +196,11 @@ ALTER TABLE "Invoice" ADD CONSTRAINT "Invoice_orderId_fkey" FOREIGN KEY ("orderI
         await prisma.$executeRawUnsafe(query);
         executionResults.push({ query: query.substring(0, 50) + "...", status: "ok" });
       } catch (e: any) {
-        // If it's just an "already exists" error for types or schemas, we can ignore it
-        if (e.message.includes("already exists")) {
-          executionResults.push({ query: query.substring(0, 50) + "...", status: "ignored_exists" });
-        } else {
-          throw e;
-        }
+        executionResults.push({ 
+          query: query.substring(0, 50) + "...", 
+          status: "error", 
+          error: e.message || String(e) 
+        });
       }
     }
 
