@@ -112,10 +112,10 @@ export default function HomeClient({
           <div className="flex flex-col md:flex-row items-center justify-between gap-8 mb-16">
             <div className="max-w-2xl">
               <span className="text-terracotta font-bold text-xs uppercase tracking-[0.3em] mb-4 block">Gastronomie</span>
-              <h3 className="font-serif text-5xl font-black text-forest-green mb-6 leading-tight">Cuisiné avec Passion</h3>
-              <p className="text-forest-green/60 text-lg">Découvrez nos plats signatures, des burgers végétaux au Ndolé revisité, servis avec élégance.</p>
+              <h3 className="font-serif text-5xl font-black text-forest-green dark:text-soft-cream mb-6 leading-tight">Cuisiné avec Passion</h3>
+              <p className="text-forest-green/60 dark:text-soft-cream/60 text-lg">Découvrez nos plats signatures, des burgers végétaux au Ndolé revisité, servis avec élégance.</p>
             </div>
-            <Link href="/restaurant" className="px-10 py-4 border-2 border-forest-green text-forest-green font-bold rounded-full hover:bg-forest-green hover:text-white transition-all flex items-center gap-2 whitespace-nowrap">
+            <Link href="/restaurant" className="px-10 py-4 border-2 border-forest-green dark:border-soft-cream text-forest-green dark:text-soft-cream font-bold rounded-full hover:bg-forest-green dark:hover:bg-soft-cream hover:text-white dark:hover:text-forest-green transition-all flex items-center gap-2 whitespace-nowrap">
               Explorer le Restaurant
               <span className="material-symbols-outlined">restaurant</span>
             </Link>
@@ -160,10 +160,10 @@ export default function HomeClient({
           viewport={{ once: true }}
           className="max-w-4xl mx-auto text-center px-6"
         >
-          <div className="size-24 bg-white rounded-full flex items-center justify-center mx-auto mb-10 shadow-2xl shadow-terracotta/20">
+          <div className="size-24 bg-white dark:bg-forest-green/50 rounded-full flex items-center justify-center mx-auto mb-10 shadow-2xl shadow-terracotta/20">
              <span className="material-symbols-outlined text-terracotta text-5xl">mark_email_unread</span>
           </div>
-          <h3 className="font-serif text-5xl mb-6 font-black tracking-tight text-forest-green">{t('newsletter_title')}</h3>
+          <h3 className="font-serif text-5xl mb-6 font-black tracking-tight text-forest-green dark:text-soft-cream">{t('newsletter_title')}</h3>
           <p className="text-forest-green/60 dark:text-soft-cream/60 mb-12 text-xl max-w-2xl mx-auto">{t('newsletter_desc')}</p>
           
           <AnimatePresence mode="wait">
@@ -208,7 +208,7 @@ export default function HomeClient({
             <p className="mt-4 text-red-500 font-bold">{message}</p>
           )}
 
-          <p className="mt-8 text-[11px] text-forest-green/40 uppercase tracking-[0.3em] font-bold">Zéro spam. Que de la passion végétale.</p>
+          <p className="mt-8 text-[11px] text-forest-green/40 dark:text-soft-cream/40 uppercase tracking-[0.3em] font-bold">Zéro spam. Que de la passion végétale.</p>
         </motion.div>
       </section>
     </>
