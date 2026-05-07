@@ -870,7 +870,7 @@ export async function sendPasswordResetEmail(email: string, name: string, token:
 
   try {
     await transporter.sendMail({
-      from: DEFAULT_FROM,
+      from: '"Vegan Delights" <noreply@vegandelights.store>',
       to: email,
       subject,
       html,
