@@ -8,7 +8,7 @@ import prisma from "@/lib/prisma";
 import { sendOtpEmail, sendPasswordResetEmail } from "@/lib/email";
 import { z } from "zod";
 import { isValidPhoneNumber } from "libphonenumber-js";
-import crypto from 'crypto';
+import crypto from 'node:crypto';
 
 const registerSchema = z.object({
   firstName: z.string().min(2, "Le prénom doit avoir au moins 2 caractères"),
@@ -29,7 +29,7 @@ const registerSchema = z.object({
   path: ["confirmPassword"]
 });
 
-export async function forgotPassword(formData: FormData) {
+export async function forgotPassword(prevState: any, formData: FormData) {
   const email = formData.get("email") as string;
   const locale = formData.get("locale") as string || "fr";
 
