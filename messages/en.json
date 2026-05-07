@@ -18,6 +18,15 @@
     "newsletter_title": "Join our conscious community",
     "newsletter_desc": "Receive exclusive recipes, early access to seasonal launches, and sustainable living tips every week.",
     "newsletter_placeholder": "Email Address",
-    "subscribe": "Subscribe"
+    "subscribe": "Subscribe",
+    "restaurant_badge": "Gastronomy",
+    "restaurant_title": "Cooked with Passion",
+    "restaurant_desc": "Discover our signature dishes, from plant-based burgers to reinvented Ndolé, served with elegance.",
+    "restaurant_link": "Explore the Restaurant",
+    "boutique_badge": "Organic Grocery",
+    "boutique_title": "The Vegan Shop",
+    "boutique_desc": "The best of plant-based alternatives: fermented cheeses, plant meats, and organic pantry items.",
+    "boutique_link": "Access the Shop",
+    "newsletter_spam": "Zero spam. Only plant-based passion."
   }
 }

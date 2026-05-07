@@ -22,6 +22,15 @@
     "newsletter_title": "Rejoignez notre communauté engagée",
     "newsletter_desc": "Recevez chaque semaine des recettes exclusives, un accès anticipé aux lancements saisonniers et des conseils.",
     "newsletter_placeholder": "Adresse Email",
-    "subscribe": "S'abonner"
+    "subscribe": "S'abonner",
+    "restaurant_badge": "Gastronomie",
+    "restaurant_title": "Cuisiné avec Passion",
+    "restaurant_desc": "Découvrez nos plats signatures, des burgers végétaux au Ndolé revisité, servis avec élégance.",
+    "restaurant_link": "Explorer le Restaurant",
+    "boutique_badge": "Épicerie Bio",
+    "boutique_title": "La Boutique Vegan",
+    "boutique_desc": "Le meilleur des alternatives végétales : fromages fermentés, viandes végétales et produits de garde-manger bio.",
+    "boutique_link": "Accéder à la Boutique",
+    "newsletter_spam": "Zéro spam. Que de la passion végétale."
   }
 }

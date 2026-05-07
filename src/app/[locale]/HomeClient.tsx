@@ -111,12 +111,12 @@ export default function HomeClient({
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-8 mb-16">
             <div className="max-w-2xl">
-              <span className="text-terracotta font-bold text-xs uppercase tracking-[0.3em] mb-4 block">Gastronomie</span>
-              <h3 className="font-serif text-5xl font-black text-forest-green dark:text-soft-cream mb-6 leading-tight">Cuisiné avec Passion</h3>
-              <p className="text-forest-green/60 dark:text-soft-cream/60 text-lg">Découvrez nos plats signatures, des burgers végétaux au Ndolé revisité, servis avec élégance.</p>
+              <span className="text-terracotta font-bold text-xs uppercase tracking-[0.3em] mb-4 block">{t('restaurant_badge')}</span>
+              <h3 className="font-serif text-5xl font-black text-forest-green dark:text-soft-cream mb-6 leading-tight">{t('restaurant_title')}</h3>
+              <p className="text-forest-green/60 dark:text-soft-cream/60 text-lg">{t('restaurant_desc')}</p>
             </div>
             <Link href="/restaurant" className="px-10 py-4 border-2 border-forest-green dark:border-soft-cream text-forest-green dark:text-soft-cream font-bold rounded-full hover:bg-forest-green dark:hover:bg-soft-cream hover:text-white dark:hover:text-forest-green transition-all flex items-center gap-2 whitespace-nowrap">
-              Explorer le Restaurant
+              {t('restaurant_link')}
               <span className="material-symbols-outlined">restaurant</span>
             </Link>
           </div>
@@ -133,12 +133,12 @@ export default function HomeClient({
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-8 mb-16">
             <div className="max-w-2xl text-left">
-              <span className="text-primary font-bold text-xs uppercase tracking-[0.3em] mb-4 block">Épicerie Bio</span>
-              <h3 className="font-serif text-5xl font-black text-white mb-6 leading-tight font-black">La Boutique Vegan</h3>
-              <p className="text-soft-cream/60 text-lg leading-relaxed">Le meilleur des alternatives végétales : fromages fermentés, viandes végétales et produits de garde-manger bio.</p>
+              <span className="text-primary font-bold text-xs uppercase tracking-[0.3em] mb-4 block">{t('boutique_badge')}</span>
+              <h3 className="font-serif text-5xl font-black text-white mb-6 leading-tight font-black">{t('boutique_title')}</h3>
+              <p className="text-soft-cream/60 text-lg leading-relaxed">{t('boutique_desc')}</p>
             </div>
             <Link href="/shop" className="px-10 py-4 bg-primary text-forest-green font-bold rounded-full hover:scale-105 transition-all flex items-center gap-2 whitespace-nowrap">
-              Accéder à la Boutique
+              {t('boutique_link')}
               <span className="material-symbols-outlined">shopping_bag</span>
             </Link>
           </div>
@@ -208,7 +208,7 @@ export default function HomeClient({
             <p className="mt-4 text-red-500 font-bold">{message}</p>
           )}
 
-          <p className="mt-8 text-[11px] text-forest-green/40 dark:text-soft-cream/40 uppercase tracking-[0.3em] font-bold">Zéro spam. Que de la passion végétale.</p>
+          <p className="mt-8 text-[11px] text-forest-green/40 dark:text-soft-cream/40 uppercase tracking-[0.3em] font-bold">{t('newsletter_spam')}</p>
         </motion.div>
       </section>
     </>
